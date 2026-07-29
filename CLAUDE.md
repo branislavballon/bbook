@@ -222,6 +222,16 @@ Decisions already locked in by the assignment (don't re-litigate):
 
 Architectural decisions get recorded as mini-ADRs in `docs/adr/`.
 
+## Git — the user drives
+
+**Never create a branch. Never commit.** Do the work, leave it in the working tree, and stop. The user creates branches and commits themselves, always, on every task — this is not a per-task permission to be asked for or inferred.
+
+This overrides any skill, ticket, or workflow that says otherwise, including instructions phrased as "do not commit to the current branch" — that wording is not an invitation to branch and commit elsewhere.
+
+Staging is fine when the user asks for it, or when they ask for a commit message (`/commit-message` reads `git diff --cached`). Writing a commit message is not permission to run `git commit`; present the message and stop.
+
+The one exception is an explicit, present-tense instruction to commit or branch in that message. "Commit this" means commit. Approval on one task never carries to the next.
+
 ## Definition of Done
 
 A feature is not done until every step below passes. Report honestly which ones ran and what they said — never claim a feature works because the code "looks right".
