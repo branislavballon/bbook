@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -23,20 +25,7 @@ class PostController extends Controller
             ->get();
 
         return Inertia::render('feed', [
-            'posts' => $posts->map(fn (Post $post): array => [
-                'id' => $post->id,
-                'body' => $post->body,
-                'created_at' => $post->created_at->toIso8601String(),
-                'created_at_diff' => $post->created_at->diffForHumans(),
-                'author' => [
-                    'id' => $post->author->id,
-                    'name' => $post->author->name,
-                ],
-                // Likes and comments do not exist yet; these counts become
-                // withCount() aggregates when those relations land.
-                'likes_count' => 0,
-                'comments_count' => 0,
-            ]),
+            'posts' => $posts->map(fn (Post $post): array => $this->postPayload($post, $request->user())),
         ]);
     }
 
@@ -50,5 +39,85 @@ class PostController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Post published.')]);
 
         return to_route('feed');
+    }
+
+    /**
+     * Show a single post in full.
+     */
+    public function show(Request $request, Post $post): Response
+    {
+        // Visibility is not a rule yet: the feed is still own-posts-only, so
+        // there is nothing to hide. PostPolicy gains `view` with the
+        // friendship graph, and this lookup authorizes against it then.
+        $post->load('author');
+
+        return Inertia::render('posts/show', [
+            'post' => $this->postPayload($post, $request->user()),
+        ]);
+    }
+
+    /**
+     * Show the form for editing a post, pre-filled with its current text.
+     */
+    public function edit(Post $post): Response
+    {
+        return Inertia::render('posts/edit', [
+            'post' => [
+                'id' => $post->id,
+                'body' => $post->body,
+            ],
+        ]);
+    }
+
+    /**
+     * Save an edited post.
+     */
+    public function update(UpdatePostRequest $request, Post $post): RedirectResponse
+    {
+        $post->update($request->validated());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Post updated.')]);
+
+        return to_route('posts.show', $post);
+    }
+
+    /**
+     * Delete a post, and with it — by database cascade — everything attached.
+     */
+    public function destroy(Post $post): RedirectResponse
+    {
+        $post->delete();
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Post deleted.')]);
+
+        return to_route('feed');
+    }
+
+    /**
+     * The shape every screen reads a post in.
+     *
+     * @return array<string, mixed>
+     */
+    private function postPayload(Post $post, User $viewer): array
+    {
+        // TODO: This should be resource in the future.
+        return [
+            'id' => $post->id,
+            'body' => $post->body,
+            'created_at' => $post->created_at->toIso8601String(),
+            'created_at_diff' => $post->created_at->diffForHumans(),
+            'author' => [
+                'id' => $post->author->id,
+                'name' => $post->author->name,
+            ],
+            // Likes and comments do not exist yet; these counts become
+            // withCount() aggregates when those relations land.
+            'likes_count' => 0,
+            'comments_count' => 0,
+            'can' => [
+                'update' => $viewer->can('update', $post),
+                'delete' => $viewer->can('delete', $post),
+            ],
+        ];
     }
 }

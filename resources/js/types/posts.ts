@@ -3,6 +3,11 @@ export type PostAuthor = {
     name: string;
 };
 
+export type PostAbilities = {
+    update: boolean;
+    delete: boolean;
+};
+
 export type Post = {
     id: number;
     body: string;
@@ -11,4 +16,5 @@ export type Post = {
     author: PostAuthor;
     likes_count: number;
     comments_count: number;
+    can: PostAbilities;
 };

@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-class StorePostRequest extends PostRequest
+class UpdatePostRequest extends PostRequest
 {
     /**
      * Get the custom validation messages.
@@ -12,7 +12,7 @@ class StorePostRequest extends PostRequest
     public function messages(): array
     {
         return [
-            'body.required' => __('Write something before posting.'),
+            'body.required' => __('A post cannot be left empty.'),
         ];
     }
 }

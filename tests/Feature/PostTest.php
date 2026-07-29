@@ -98,3 +98,152 @@ test('deleting a person deletes their posts', function () {
 
     expect(Post::count())->toBe(0);
 });
+
+test('a person can open the detail page of their own post', function () {
+    $user = User::factory()->create();
+    $post = Post::factory()->for($user, 'author')->create(['body' => 'The whole story.']);
+
+    $this->actingAs($user)
+        ->get(route('posts.show', $post))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('posts/show')
+            ->where('post.id', $post->id)
+            ->where('post.body', 'The whole story.')
+            ->where('post.author.name', $user->name)
+            ->where('post.likes_count', 0)
+            ->where('post.comments_count', 0)
+            ->where('post.can.update', true)
+            ->where('post.can.delete', true)
+        );
+});
+
+test('the edit page is pre-filled with the posts current text', function () {
+    $user = User::factory()->create();
+    $post = Post::factory()->for($user, 'author')->create(['body' => 'Needs a fix.']);
+
+    $this->actingAs($user)
+        ->get(route('posts.edit', $post))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('posts/edit')
+            ->where('post.id', $post->id)
+            ->where('post.body', 'Needs a fix.')
+        );
+});
+
+test('a person can edit their own post and lands back on its detail page', function () {
+    $user = User::factory()->create();
+    $post = Post::factory()->for($user, 'author')->create(['body' => 'Before.']);
+
+    $response = $this->actingAs($user)->patch(route('posts.update', $post), [
+        'body' => 'After.',
+    ]);
+
+    $response->assertRedirect(route('posts.show', $post));
+    $response->assertSessionHas('inertia.flash_data.toast.message', 'Post updated.');
+    expect($post->refresh()->body)->toBe('After.');
+});
+
+test('an edited post is validated with the same rules as a new one', function () {
+    $user = User::factory()->create();
+    $post = Post::factory()->for($user, 'author')->create(['body' => 'Before.']);
+
+    $this->actingAs($user)
+        ->patch(route('posts.update', $post), ['body' => '   '])
+        ->assertSessionHasErrors('body');
+
+    $this->actingAs($user)
+        ->patch(route('posts.update', $post), ['body' => str_repeat('a', 1001)])
+        ->assertSessionHasErrors('body');
+
+    expect($post->refresh()->body)->toBe('Before.');
+});
+
+test('a person can delete their own post', function () {
+    $user = User::factory()->create();
+    $post = Post::factory()->for($user, 'author')->create();
+
+    $response = $this->actingAs($user)->delete(route('posts.destroy', $post));
+
+    $response->assertRedirect(route('feed'));
+    $response->assertSessionHas('inertia.flash_data.toast.message', 'Post deleted.');
+    expect(Post::count())->toBe(0);
+});
+
+test('a person cannot open the edit page for a post someone else wrote', function () {
+    $author = User::factory()->create();
+    $stranger = User::factory()->create();
+    $post = Post::factory()->for($author, 'author')->create();
+
+    $this->actingAs($stranger)
+        ->get(route('posts.edit', $post))
+        ->assertForbidden();
+});
+
+test('a person cannot update a post authored by someone else', function () {
+    $author = User::factory()->create();
+    $stranger = User::factory()->create();
+    $post = Post::factory()->for($author, 'author')->create(['body' => 'Mine.']);
+
+    $this->actingAs($stranger)
+        ->patch(route('posts.update', $post), ['body' => 'Hijacked.'])
+        ->assertForbidden();
+
+    expect($post->refresh()->body)->toBe('Mine.');
+});
+
+test('a person cannot delete a post authored by someone else', function () {
+    $author = User::factory()->create();
+    $stranger = User::factory()->create();
+    $post = Post::factory()->for($author, 'author')->create();
+
+    $this->actingAs($stranger)
+        ->delete(route('posts.destroy', $post))
+        ->assertForbidden();
+
+    expect(Post::count())->toBe(1);
+});
+
+test('another persons post offers no edit or delete affordance', function () {
+    $author = User::factory()->create();
+    $stranger = User::factory()->create();
+    $post = Post::factory()->for($author, 'author')->create();
+
+    $this->actingAs($stranger)
+        ->get(route('posts.show', $post))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('post.can.update', false)
+            ->where('post.can.delete', false)
+        );
+});
+
+test('guests cannot reach a post detail page', function () {
+    $post = Post::factory()->create();
+
+    $this->get(route('posts.show', $post))->assertRedirect(route('login'));
+});
+
+test('someone elses post is refused before its text is even validated', function () {
+    $author = User::factory()->create();
+    $stranger = User::factory()->create();
+    $post = Post::factory()->for($author, 'author')->create(['body' => 'Mine.']);
+
+    $this->actingAs($stranger)
+        ->patch(route('posts.update', $post), ['body' => ''])
+        ->assertForbidden();
+
+    expect($post->refresh()->body)->toBe('Mine.');
+});
+
+test('guests cannot edit or delete a post', function () {
+    $post = Post::factory()->create(['body' => 'Untouched.']);
+
+    $this->get(route('posts.edit', $post))->assertRedirect(route('login'));
+    $this->patch(route('posts.update', $post), ['body' => 'Changed.'])
+        ->assertRedirect(route('login'));
+    $this->delete(route('posts.destroy', $post))->assertRedirect(route('login'));
+
+    expect($post->refresh()->body)->toBe('Untouched.')
+        ->and(Post::count())->toBe(1);
+});
