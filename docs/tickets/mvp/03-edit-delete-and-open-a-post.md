@@ -1,6 +1,6 @@
 # 03 — Edit, delete, and open a Post
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 **Blocked by:** 02 — Write and read your own Posts.
 

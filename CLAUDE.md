@@ -249,6 +249,17 @@ Frontend change (React / Inertia page or component):
 
 There is currently **no FE test runner** (no Vitest, no Testing Library, no Pest browser tests) and adding one is a dependency change that needs the user's approval — do not install one unprompted. Until then, step 3 is what stands in for FE tests, so it may not be skipped on FE work.
 
+### Closing the ticket
+
+Every implementation ends by updating the ticket that asked for it, in the same working tree as the code. A shipped feature whose ticket still reads `ready-for-agent` leaves the tracker lying about the state of the repo.
+
+1. Set the `Status:` line to `resolved`.
+2. Tick each acceptance criterion **you have actually verified** — not each one you believe the code satisfies. The steps above are what earns a tick.
+3. Leave a criterion unticked when it genuinely is not met, and append a short `## Notes on delivery` section saying why and which ticket now owns it. Deferring in writing is honest; ticking a box to make the ticket look finished is not. Ticket 02's `withCount` counts and ticket 03's cascade are the worked examples — both wait on tables a later ticket creates.
+4. Do not add a `## Comments` section unless the user asks for one.
+
+The ticket edit is part of the change, so it belongs in the same commit as the code — but the user still creates the branch and commits it. See the Git section above.
+
 ## Browser verification & debugging
 
 Automated tests stay the primary proof of correctness — they are not optional and Chrome does not replace them. On top of that, use the **Chrome DevTools MCP** to verify and debug anything that only shows up in a real browser.
@@ -269,6 +280,8 @@ Local markdown — specs in `docs/specs/<feature>/spec.md`, issues in `docs/tick
 ### Triage labels
 
 The five canonical roles, unchanged, recorded as a `Status:` line in each issue file. See `docs/agents/triage-labels.md`.
+
+None of the five describes finished work — they are triage states, not lifecycle states. A ticket that has shipped takes `resolved`, borrowed from the wayfinding vocabulary in `docs/agents/issue-tracker.md`. See "Closing the ticket" above.
 
 ### Domain docs
 

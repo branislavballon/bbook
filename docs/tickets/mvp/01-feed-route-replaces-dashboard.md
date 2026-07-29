@@ -1,6 +1,6 @@
 # 01 — Feed route replaces dashboard
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 **Blocked by:** None — can start immediately.
 

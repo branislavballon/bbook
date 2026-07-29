@@ -1,6 +1,6 @@
 # 02 — Write and read your own Posts
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 **Blocked by:** 01 — Feed route replaces dashboard.
 
@@ -18,14 +18,24 @@ This ticket writes the first migration and sets the pattern every later one foll
 
 ## Acceptance criteria
 
-- [ ] A Post belongs to a non-nullable Author, holds plain text, and records when it was created.
-- [ ] A composer sits at the top of the Feed; submitting it creates a Post and returns to the Feed with confirmation.
-- [ ] Post text is validated by a Form Request — required, trimmed, capped at 1000 characters — never inline in the controller.
-- [ ] Empty or whitespace-only text is rejected with a visible error.
-- [ ] Line breaks in the text survive rendering.
-- [ ] The Feed lists the person's own Posts, newest first.
+- [x] A Post belongs to a non-nullable Author, holds plain text, and records when it was created.
+- [x] A composer sits at the top of the Feed; submitting it creates a Post and returns to the Feed with confirmation.
+- [x] Post text is validated by a Form Request — required, trimmed, capped at 1000 characters — never inline in the controller.
+- [x] Empty or whitespace-only text is rejected with a visible error.
+- [x] Line breaks in the text survive rendering.
+- [x] The Feed lists the person's own Posts, newest first.
 - [ ] Like and Comment counts are read from the query via `withCount`, not stored on the Post.
-- [ ] Author is eager-loaded wherever Posts are listed.
-- [ ] A factory exists for Posts, usable with an explicit Author.
-- [ ] `PostCard` and `UserAvatar` exist as reusable components from the start.
-- [ ] Test: an authenticated person can create a Post, and it appears in their Feed.
+- [x] Author is eager-loaded wherever Posts are listed.
+- [x] A factory exists for Posts, usable with an explicit Author.
+- [x] `PostCard` and `UserAvatar` exist as reusable components from the start.
+- [x] Test: an authenticated person can create a Post, and it appears in their Feed.
+
+## Notes on delivery
+
+One criterion is left open.
+
+**The `withCount` aggregates are unticked.** Likes and Comments do not exist
+yet — there are no `likes` or `comments` tables — so `postPayload()` sends
+hardcoded zeroes and there is nothing honest to aggregate. The criterion is
+really a constraint on tickets 07 and 08: read both counts from the query with
+`withCount()`, never from a column on the Post.
