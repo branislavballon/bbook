@@ -10,7 +10,12 @@ Route::inertia('/', 'welcome')->name('home');
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('feed', [PostController::class, 'index'])->name('feed');
     Route::post('posts', [PostController::class, 'store'])->name('posts.store');
-    Route::get('posts/{post}', [PostController::class, 'show'])->name('posts.show');
+    // A post nobody linked to is still guessable by id, so the detail route
+    // is gated by PostPolicy::view — which asks Post::scopeVisibleTo — rather
+    // than relying on the feed to be the only way in.
+    Route::get('posts/{post}', [PostController::class, 'show'])
+        ->can('view', 'post')
+        ->name('posts.show');
 
     // PostPolicy runs as route middleware rather than inside the controller,
     // so ownership is refused before the Form Request validates: a stranger

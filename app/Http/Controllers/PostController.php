@@ -20,7 +20,7 @@ class PostController extends Controller
     {
         $posts = Post::query()
             ->with('author')
-            ->whereBelongsTo($request->user(), 'author')
+            ->visibleTo($request->user())
             ->latest()
             ->get();
 
@@ -46,9 +46,6 @@ class PostController extends Controller
      */
     public function show(Request $request, Post $post): Response
     {
-        // Visibility is not a rule yet: the feed is still own-posts-only, so
-        // there is nothing to hide. PostPolicy gains `view` with the
-        // friendship graph, and this lookup authorizes against it then.
         $post->load('author');
 
         return Inertia::render('posts/show', [

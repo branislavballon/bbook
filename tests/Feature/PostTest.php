@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Friendship;
 use App\Models\Post;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia;
@@ -205,17 +206,65 @@ test('a person cannot delete a post authored by someone else', function () {
     expect(Post::count())->toBe(1);
 });
 
-test('another persons post offers no edit or delete affordance', function () {
+test('a friends post offers no edit or delete affordance', function () {
     $author = User::factory()->create();
-    $stranger = User::factory()->create();
+    $viewer = User::factory()->create();
+    Friendship::factory()->accepted()->create([
+        'requester_id' => $author->id,
+        'addressee_id' => $viewer->id,
+    ]);
     $post = Post::factory()->for($author, 'author')->create();
 
-    $this->actingAs($stranger)
+    $this->actingAs($viewer)
         ->get(route('posts.show', $post))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('post.can.update', false)
             ->where('post.can.delete', false)
         );
+});
+
+test('a person can open the detail page of a friends post', function () {
+    $friend = User::factory()->create();
+    $viewer = User::factory()->create();
+    Friendship::factory()->accepted()->create([
+        'requester_id' => $friend->id,
+        'addressee_id' => $viewer->id,
+    ]);
+    $post = Post::factory()->for($friend, 'author')->create(['body' => 'Told to friends.']);
+
+    $this->actingAs($viewer)
+        ->get(route('posts.show', $post))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('posts/show')
+            ->where('post.id', $post->id)
+            ->where('post.body', 'Told to friends.')
+            ->where('post.author.name', $friend->name)
+        );
+});
+
+test('a person is refused the detail page of a strangers post', function () {
+    $stranger = User::factory()->create();
+    $viewer = User::factory()->create();
+    $post = Post::factory()->for($stranger, 'author')->create();
+
+    $this->actingAs($viewer)
+        ->get(route('posts.show', $post))
+        ->assertForbidden();
+});
+
+test('a pending request does not open a persons posts', function () {
+    $requester = User::factory()->create();
+    $viewer = User::factory()->create();
+    Friendship::factory()->pending()->create([
+        'requester_id' => $requester->id,
+        'addressee_id' => $viewer->id,
+    ]);
+    $post = Post::factory()->for($requester, 'author')->create();
+
+    $this->actingAs($viewer)
+        ->get(route('posts.show', $post))
+        ->assertForbidden();
 });
 
 test('guests cannot reach a post detail page', function () {

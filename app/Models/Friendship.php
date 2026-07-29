@@ -66,6 +66,35 @@ class Friendship extends Model
     }
 
     /**
+     * Limit to accepted friendships linking this person to whoever the given
+     * column names. The column form of `involving`, for correlating a
+     * friendship subquery against an outer table — which is how a post asks
+     * whether its author is a friend of the viewer.
+     *
+     * A row reads the same from both ends, so it matches if the viewer is the
+     * requester and the counterpart the addressee, or the other way round.
+     *
+     * @param  Builder<$this>  $query
+     */
+    public function scopeAcceptedBetween(Builder $query, User $viewer, string $counterpartColumn): void
+    {
+        /** @var array<string, string> Which column holds the viewer, and which the counterpart. */
+        $readings = [
+            'requester_id' => 'addressee_id',
+            'addressee_id' => 'requester_id',
+        ];
+
+        $query->where('status', FriendshipStatus::Accepted)
+            ->where(function (Builder $query) use ($readings, $viewer, $counterpartColumn): void {
+                foreach ($readings as $viewerSide => $counterpartSide) {
+                    $query->orWhere(fn (Builder $friendship): Builder => $friendship
+                        ->where($viewerSide, $viewer->id)
+                        ->whereColumn($counterpartSide, $counterpartColumn));
+                }
+            });
+    }
+
+    /**
      * Limit to the single friendship between two people, whoever asked.
      *
      * @param  Builder<$this>  $query
