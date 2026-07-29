@@ -222,6 +222,34 @@ Decisions already locked in by the assignment (don't re-litigate):
 
 Architectural decisions get recorded as mini-ADRs in `docs/adr/`.
 
+## Definition of Done
+
+A feature is not done until every step below passes. Report honestly which ones ran and what they said — never claim a feature works because the code "looks right".
+
+Backend change:
+
+1. `php artisan test --compact --filter=<relevant>` — new or updated Pest feature test, green.
+2. `vendor/bin/pint --dirty --format agent`.
+
+Frontend change (React / Inertia page or component):
+
+1. `npm run types:check` and `npm run lint:check` — these are the only static guardrails the project has for FE, so they are mandatory, not optional.
+2. A Pest feature test on the controller asserting the Inertia component name and the props the page consumes (`assertInertia(fn ($page) => $page->component(...)->has(...))`). This proves the contract, not the rendering.
+3. **Browser verification via Chrome DevTools MCP** — the only thing that proves the UI actually renders and behaves. Drive the real flow, confirm `list_console_messages` is clean of React/Inertia errors, and confirm the relevant request in `list_network_requests` returns the expected status.
+
+There is currently **no FE test runner** (no Vitest, no Testing Library, no Pest browser tests) and adding one is a dependency change that needs the user's approval — do not install one unprompted. Until then, step 3 is what stands in for FE tests, so it may not be skipped on FE work.
+
+## Browser verification & debugging
+
+Automated tests stay the primary proof of correctness — they are not optional and Chrome does not replace them. On top of that, use the **Chrome DevTools MCP** to verify and debug anything that only shows up in a real browser.
+
+- Activate the `chrome-devtools-mcp:chrome-devtools` skill before driving the browser; `chrome-devtools-mcp:a11y-debugging` for accessibility checks and `chrome-devtools-mcp:troubleshooting` when the MCP connection fails.
+- Requires the dev server running (`composer run dev`). Resolve URLs with Boost's `get-absolute-url`, never hardcode a host/port.
+- Use it to: confirm a UI change actually renders, walk a flow end-to-end (create post → like → comment → friend request), catch React/Inertia console errors, inspect failing XHR/Inertia requests, and check keyboard focus + contrast on new UI.
+- Preferred loop for frontend work: `take_snapshot` to find elements → `click` / `fill_form` to drive → `list_console_messages` and `list_network_requests` to verify nothing broke → `take_screenshot` only when a visual result is worth showing the user.
+- When debugging, read the browser side (`list_console_messages`, `get_network_request`) alongside the server side (Boost `last-error`, `read-log-entries`) before forming a theory.
+- Never commit browser-driven throwaway scripts; browser checks are verification, and anything worth keeping becomes a Pest test.
+
 ## Agent skills
 
 ### Issue tracker
