@@ -206,6 +206,22 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 
 </laravel-boost-guidelines>
 
+## Project
+
+Mini social network (Facebook clone) built as an interview assignment. **`docs/Assignment.md` is the source of truth for scope** — read it before planning any feature and do not implement anything listed under "Not to implement for now".
+
+Decisions already locked in by the assignment (don't re-litigate):
+
+- Laravel 13 React starter kit, Inertia 3, React + TypeScript, Tailwind, shadcn/ui, SQLite.
+- Like/comment counts computed via `withCount()`, not denormalized columns.
+- Avatars generated from initials; no file upload anywhere in the MVP.
+- Ownership via policies (`PostPolicy`, `FriendshipPolicy`), never inline controller checks.
+- Validation via Form Requests, never inline in controllers.
+- Feed = own posts + accepted friends' posts only.
+- Conventional commits (`feat:` / `fix:` / `refactor:`) for a readable history.
+
+Architectural decisions get recorded as mini-ADRs in `docs/adr/`.
+
 ## Agent skills
 
 ### Issue tracker
