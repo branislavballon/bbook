@@ -15,6 +15,8 @@ export type Post = {
     created_at_diff: string;
     author: PostAuthor;
     likes_count: number;
+    /** Whether the current viewer has liked this post. */
+    liked: boolean;
     comments_count: number;
     can: PostAbilities;
 };

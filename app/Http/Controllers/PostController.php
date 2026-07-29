@@ -20,6 +20,7 @@ class PostController extends Controller
     {
         $posts = Post::query()
             ->with('author')
+            ->withLikeState($request->user())
             ->visibleTo($request->user())
             ->latest()
             ->get();
@@ -46,7 +47,7 @@ class PostController extends Controller
      */
     public function show(Request $request, Post $post): Response
     {
-        $post->load('author');
+        $post->load('author')->loadLikeState($request->user());
 
         return Inertia::render('posts/show', [
             'post' => $this->postPayload($post, $request->user()),
@@ -107,9 +108,11 @@ class PostController extends Controller
                 'id' => $post->author->id,
                 'name' => $post->author->name,
             ],
-            // Likes and comments do not exist yet; these counts become
-            // withCount() aggregates when those relations land.
-            'likes_count' => 0,
+            'likes_count' => $post->likes_count,
+            // Resolved in the query that loaded the post, not asked per card.
+            'liked' => (bool) $post->liked,
+            // Comments do not exist yet; this becomes a withCount() aggregate
+            // when that relation lands.
             'comments_count' => 0,
             'can' => [
                 'update' => $viewer->can('update', $post),

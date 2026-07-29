@@ -1,6 +1,8 @@
-import { Link } from '@inertiajs/react';
-import { Heart, MessageCircle, Pencil } from 'lucide-react';
+import { Form, Link } from '@inertiajs/react';
+import { MessageCircle, Pencil } from 'lucide-react';
+import LikeController from '@/actions/App/Http/Controllers/LikeController';
 import { DeletePostDialog } from '@/components/delete-post-dialog';
+import { LikeButton } from '@/components/like-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { UserAvatar } from '@/components/user-avatar';
@@ -14,9 +16,14 @@ type Props = {
      * being that destination, renders the same card without the link.
      */
     linked?: boolean;
+    /**
+     * Which prop liking refreshes. The feed holds its list under `posts`, the
+     * detail page a single `post`, and each should reload only its own.
+     */
+    reloadProp?: string;
 };
 
-export function PostCard({ post, linked = true }: Props) {
+export function PostCard({ post, linked = true, reloadProp = 'posts' }: Props) {
     return (
         <Card data-test="post-card">
             <CardContent className="flex gap-3">
@@ -48,11 +55,30 @@ export function PostCard({ post, linked = true }: Props) {
                     )}
 
                     <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1.5">
-                            <Heart className="size-4" aria-hidden="true" />
-                            {post.likes_count}
-                            <span className="sr-only">likes</span>
-                        </span>
+                        {/*
+                         * Liking and unliking are separate endpoints, so
+                         * which one this form posts to is read off the
+                         * server's answer rather than off a toggle. The count
+                         * that comes back is the server's too — nothing here
+                         * mirrors it, so only the post's own prop reloads.
+                         */}
+                        <Form
+                            {...(post.liked
+                                ? LikeController.destroy.form(post.id)
+                                : LikeController.store.form(post.id))}
+                            options={{
+                                preserveScroll: true,
+                                only: [reloadProp],
+                            }}
+                        >
+                            {({ processing }) => (
+                                <LikeButton
+                                    count={post.likes_count}
+                                    liked={post.liked}
+                                    disabled={processing}
+                                />
+                            )}
+                        </Form>
 
                         <span className="flex items-center gap-1.5">
                             <MessageCircle

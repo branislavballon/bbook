@@ -16,7 +16,7 @@ export default function ShowPost({ post }: Props) {
             <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 p-4">
                 <h1 className="sr-only">Post by {post.author.name}</h1>
 
-                <PostCard post={post} linked={false} />
+                <PostCard post={post} linked={false} reloadProp="post" />
             </div>
         </>
     );

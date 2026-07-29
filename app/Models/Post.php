@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -17,6 +18,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read User $author
+ * @property-read int $likes_count
+ * @property-read bool $liked
  */
 #[Fillable(['body'])]
 class Post extends Model
@@ -32,6 +35,36 @@ class Post extends Model
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * The likes this post has collected.
+     *
+     * @return HasMany<Like, $this>
+     */
+    public function likes(): HasMany
+    {
+        return $this->hasMany(Like::class);
+    }
+
+    /**
+     * Resolve the like state a post payload reads — how many likes it has, and
+     * whether this viewer is one of them — in the query that loads the posts,
+     * so neither is a question asked once per card.
+     *
+     * @param  Builder<$this>  $query
+     */
+    public function scopeWithLikeState(Builder $query, User $viewer): void
+    {
+        $query->withCount('likes')->withExists(self::likedByConstraint($viewer));
+    }
+
+    /**
+     * The same, for a post already fetched by route model binding.
+     */
+    public function loadLikeState(User $viewer): static
+    {
+        return $this->loadCount('likes')->loadExists(self::likedByConstraint($viewer));
     }
 
     /**
@@ -58,5 +91,19 @@ class Post extends Model
                     Friendship::query()->acceptedBetween($viewer, $author)->getQuery()
                 );
         });
+    }
+
+    /**
+     * The `likes` constraint naming the viewer, shared by the query-time and
+     * load-time halves of the like state so the alias is written once.
+     *
+     * @return array<string, callable(Builder<Like>): Builder<Like>>
+     */
+    private static function likedByConstraint(User $viewer): array
+    {
+        return [
+            /** @param Builder<Like> $likes */
+            'likes as liked' => fn (Builder $likes): Builder => $likes->whereBelongsTo($viewer),
+        ];
     }
 }

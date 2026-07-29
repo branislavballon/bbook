@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\FriendshipController;
+use App\Http\Controllers\LikeController;
 use App\Http\Controllers\PostController;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +32,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('posts/{post}', [PostController::class, 'destroy'])
         ->can('delete', 'post')
         ->name('posts.destroy');
+
+    // Both halves of liking authorize against the parent post's view ability,
+    // not against a like of their own: a post someone cannot read is a post
+    // they cannot act on.
+    Route::post('posts/{post}/likes', [LikeController::class, 'store'])
+        ->can('view', 'post')
+        ->name('posts.likes.store');
+
+    Route::delete('posts/{post}/likes', [LikeController::class, 'destroy'])
+        ->can('view', 'post')
+        ->name('posts.likes.destroy');
 
     // Three routes, one page component with a variant, so each section of the
     // friends destination is directly linkable and independently testable.
