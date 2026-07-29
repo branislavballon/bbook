@@ -24,3 +24,4 @@ The viewer's own Profile is the same page pointed at themselves, showing their P
 - [ ] Accepting or rejecting from a Profile goes through the same operations the Requests section uses.
 - [ ] The viewer's own Profile shows their Posts and offers no relationship action.
 - [ ] The Profile is reachable from navigation, Find People, the Friends list and Post authors.
+- [ ] Navigation gains a `My Profile` item pointing at the viewer's own `users.show` — deferred from ticket 01, which could not link at a route that did not yet exist.

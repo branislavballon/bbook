@@ -21,5 +21,6 @@ The Friends destination gains its three sections — Friends, Requests, Find Peo
 - [ ] Sending a Friend Request creates it as pending and updates the row.
 - [ ] A Form Request refuses all four bad cases: to yourself, to someone you already asked, to someone who already asked you (with a message pointing at their pending request), and to someone who is already your Friend.
 - [ ] The Friends and Requests sections render explanatory empty states.
+- [ ] Navigation gains a `Friends` item, and the Feed's empty state gains its link to Find People — both deferred from ticket 01, which could not link at routes that did not yet exist.
 - [ ] Factories exist for Friendships, with states for pending and accepted.
 - [ ] Test: a Friend Request to someone who already has a pending request outstanding to you is refused.
