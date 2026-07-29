@@ -1,5 +1,6 @@
-import { Newspaper } from 'lucide-react';
+import { Newspaper, Users } from 'lucide-react';
 import { feed } from '@/routes';
+import { index as friends } from '@/routes/friends';
 import type { NavItem } from '@/types';
 
 /**
@@ -11,5 +12,10 @@ export const mainNavItems: NavItem[] = [
         title: 'Feed',
         href: feed(),
         icon: Newspaper,
+    },
+    {
+        title: 'Friends',
+        href: friends(),
+        icon: Users,
     },
 ];
