@@ -1,6 +1,6 @@
 # 09 — Public Profiles with relationship state
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 **Blocked by:** 05 — Respond to Friend Requests and see Friends; 06 — Posts are visible to Friends only.
 
@@ -14,14 +14,14 @@ The viewer's own Profile is the same page pointed at themselves, showing their P
 
 ## Acceptance criteria
 
-- [ ] A named route renders a Profile for any person, bound by the person in the URL.
-- [ ] It does not collide with the settings screens, which already own the profile naming.
-- [ ] The Profile shows name and initials avatar.
-- [ ] A Friend's Posts are listed, using the same visibility scope as everywhere else.
-- [ ] A stranger's Posts are withheld with an explanation naming Friendship as the reason.
-- [ ] All four relationship states render: stranger, request sent, request received, already Friends.
-- [ ] The relationship state arrives as a single value computed on the server; the component does not reason about the graph.
-- [ ] Accepting or rejecting from a Profile goes through the same operations the Requests section uses.
-- [ ] The viewer's own Profile shows their Posts and offers no relationship action.
-- [ ] The Profile is reachable from navigation, Find People, the Friends list and Post authors.
-- [ ] Navigation gains a `My Profile` item pointing at the viewer's own `users.show` — deferred from ticket 01, which could not link at a route that did not yet exist.
+- [x] A named route renders a Profile for any person, bound by the person in the URL.
+- [x] It does not collide with the settings screens, which already own the profile naming.
+- [x] The Profile shows name and initials avatar.
+- [x] A Friend's Posts are listed, using the same visibility scope as everywhere else.
+- [x] A stranger's Posts are withheld with an explanation naming Friendship as the reason.
+- [x] All four relationship states render: stranger, request sent, request received, already Friends.
+- [x] The relationship state arrives as a single value computed on the server; the component does not reason about the graph.
+- [x] Accepting or rejecting from a Profile goes through the same operations the Requests section uses.
+- [x] The viewer's own Profile shows their Posts and offers no relationship action.
+- [x] The Profile is reachable from navigation, Find People, the Friends list and Post authors.
+- [x] Navigation gains a `My Profile` item pointing at the viewer's own `users.show` — deferred from ticket 01, which could not link at a route that did not yet exist.

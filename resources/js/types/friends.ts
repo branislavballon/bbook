@@ -8,12 +8,19 @@ export type RelationshipState =
 type Identity = {
     id: number;
     name: string;
+    /**
+     * The one thing the relationship state cannot express, because nobody is
+     * in a friendship with themselves. Only a profile can be pointed at the
+     * viewer; in a list it is always false.
+     */
+    is_self: boolean;
 };
 
 /**
- * A person in a friends list. The friendship's id is there exactly when a
- * friendship exists, so a row offering an action always has something to act
- * on and the compiler knows it.
+ * A person as every screen reads them — the friends lists and the profile
+ * page. The friendship's id is there exactly when a friendship exists, so
+ * whatever offers an action always has something to act on and the compiler
+ * knows it.
  */
 export type Person =
     | (Identity & { relationship_state: 'none'; friendship_id: null })

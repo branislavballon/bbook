@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
+use App\Http\Resources\PostResource;
 use App\Models\Comment;
 use App\Models\Post;
-use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,16 +19,10 @@ class PostController extends Controller
      */
     public function index(Request $request): Response
     {
-        $posts = Post::query()
-            ->with('author')
-            ->withCount('comments')
-            ->withLikeState($request->user())
-            ->visibleTo($request->user())
-            ->latest()
-            ->get();
+        $posts = Post::query()->readableBy($request->user())->get();
 
         return Inertia::render('feed', [
-            'posts' => $posts->map(fn (Post $post): array => $this->postPayload($post, $request->user())),
+            'posts' => PostResource::collection($posts),
         ]);
     }
 
@@ -62,7 +56,7 @@ class PostController extends Controller
             ->get();
 
         return Inertia::render('posts/show', [
-            'post' => $this->postPayload($post, $request->user()),
+            'post' => PostResource::make($post),
             'comments' => $comments->map($this->commentPayload(...)),
         ]);
     }
@@ -102,34 +96,6 @@ class PostController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Post deleted.')]);
 
         return to_route('feed');
-    }
-
-    /**
-     * The shape every screen reads a post in.
-     *
-     * @return array<string, mixed>
-     */
-    private function postPayload(Post $post, User $viewer): array
-    {
-        // TODO: This should be resource in the future.
-        return [
-            'id' => $post->id,
-            'body' => $post->body,
-            'created_at' => $post->created_at->toIso8601String(),
-            'created_at_diff' => $post->created_at->diffForHumans(),
-            'author' => [
-                'id' => $post->author->id,
-                'name' => $post->author->name,
-            ],
-            'likes_count' => $post->likes_count,
-            // Resolved in the query that loaded the post, not asked per card.
-            'liked' => (bool) $post->liked,
-            'comments_count' => $post->comments_count,
-            'can' => [
-                'update' => $viewer->can('update', $post),
-                'delete' => $viewer->can('delete', $post),
-            ],
-        ];
     }
 
     /**

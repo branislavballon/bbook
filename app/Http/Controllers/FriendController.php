@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\FriendshipStatus;
-use App\Enums\RelationshipState;
+use App\Http\Resources\PersonResource;
 use App\Models\Friendship;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -14,8 +14,6 @@ use Inertia\Response;
  * The three sections of the friends destination. They are three real routes
  * rendering one page component with a variant, so each is linkable,
  * back-navigable and testable on its own.
- *
- * @phpstan-type PersonPayload array{id: int, name: string, relationship_state: string, friendship_id: int|null}
  */
 class FriendController extends Controller
 {
@@ -33,12 +31,12 @@ class FriendController extends Controller
             ->where('status', FriendshipStatus::Accepted)
             ->with(['requester', 'addressee'])
             ->get()
-            ->map(fn (Friendship $friendship): array => $this->personPayload(
+            ->map(fn (Friendship $friendship): PersonResource => new PersonResource(
                 $friendship->counterpartFor($viewer),
                 $friendship,
                 $viewer,
             ))
-            ->sortBy('name')
+            ->sortBy(fn (PersonResource $person): string => $person->name)
             ->values()
             ->all();
 
@@ -59,7 +57,7 @@ class FriendController extends Controller
             ->with('requester')
             ->latest()
             ->get()
-            ->map(fn (Friendship $friendship): array => $this->personPayload(
+            ->map(fn (Friendship $friendship): PersonResource => new PersonResource(
                 $friendship->requester,
                 $friendship,
                 $viewer,
@@ -86,7 +84,7 @@ class FriendController extends Controller
             ->whereKeyNot($viewer->id)
             ->orderBy('name')
             ->get()
-            ->map(fn (User $person): array => $this->personPayload(
+            ->map(fn (User $person): PersonResource => new PersonResource(
                 $person,
                 $friendships->get($person->id),
                 $viewer,
@@ -98,25 +96,9 @@ class FriendController extends Controller
     }
 
     /**
-     * The shape every friends list reads a person in. The friendship's id
-     * rides along so a row can answer the request it is showing.
-     *
-     * @return PersonPayload
-     */
-    private function personPayload(User $person, ?Friendship $friendship, User $viewer): array
-    {
-        return [
-            'id' => $person->id,
-            'name' => $person->name,
-            'relationship_state' => RelationshipState::forViewer($friendship, $viewer)->value,
-            'friendship_id' => $friendship?->id,
-        ];
-    }
-
-    /**
      * Render the friends page in one of its three variants.
      *
-     * @param  array<int, PersonPayload>  $people
+     * @param  array<int, PersonResource>  $people
      */
     private function section(string $variant, array $people): Response
     {

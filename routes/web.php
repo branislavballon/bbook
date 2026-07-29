@@ -5,6 +5,7 @@ use App\Http\Controllers\FriendController;
 use App\Http\Controllers\FriendshipController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -58,6 +59,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('friends', [FriendController::class, 'index'])->name('friends.index');
     Route::get('friends/requests', [FriendController::class, 'requests'])->name('friends.requests');
     Route::get('friends/find', [FriendController::class, 'find'])->name('friends.find');
+
+    // Public profiles are `users.show` rather than `profile.show`: the
+    // settings screens already own the `profile.*` names, and this route is
+    // about anyone on the network, not about the person editing their own
+    // account. A person's own profile is this route pointed at themselves.
+    Route::get('users/{user}', [UserController::class, 'show'])->name('users.show');
 
     Route::post('friendships', [FriendshipController::class, 'store'])->name('friendships.store');
 

@@ -55,6 +55,9 @@ test('find people lists everyone on the network except the viewer', function () 
             ->where('people.0.id', $other->id)
             ->where('people.0.name', 'Ada Lovelace')
             ->where('people.0.relationship_state', 'none')
+            // The viewer is never in their own list, so the profile page's
+            // flag is always false on a row.
+            ->where('people.0.is_self', false)
         );
 });
 

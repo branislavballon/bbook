@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { UserAvatar } from '@/components/user-avatar';
 import { edit, show } from '@/routes/posts';
+import { show as profile } from '@/routes/users';
 import type { Post } from '@/types/posts';
 
 type Props = {
@@ -36,11 +37,19 @@ export function PostCard({ post, linked = true, reloadProp = 'posts' }: Props) {
     return (
         <Card data-test="post-card">
             <CardContent className="flex gap-3">
-                <UserAvatar name={post.author.name} />
+                <Link href={profile(post.author.id)} tabIndex={-1}>
+                    <UserAvatar name={post.author.name} />
+                </Link>
 
                 <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-baseline gap-x-2">
-                        <span className="font-medium">{post.author.name}</span>
+                        <Link
+                            href={profile(post.author.id)}
+                            className="font-medium hover:underline"
+                            data-test="author-profile-link"
+                        >
+                            {post.author.name}
+                        </Link>
                         <time
                             dateTime={post.created_at}
                             className="text-xs text-muted-foreground"

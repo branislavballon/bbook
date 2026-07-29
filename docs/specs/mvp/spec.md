@@ -2,7 +2,7 @@
 
 Status: ready-for-agent
 
-The full MVP described in `docs/Assignment.md`, specified as one document. Terminology follows `CONTEXT.md`; the three hard-to-reverse decisions are recorded in `docs/adr/`.
+The full MVP described in `docs/Assignment.md`, specified as one document. Terminology follows `CONTEXT.md`; the hard-to-reverse decisions are recorded in `docs/adr/`.
 
 ## Problem Statement
 
@@ -167,9 +167,11 @@ Feed and Find People paginate at 10, offset-based. Friends, Requests and Comment
 
 Counts come from `withCount('likes', 'comments')` on every Post query. Author is eager-loaded everywhere Posts are listed. Whether the current person has Liked each Post is resolved in the same query, not per-card.
 
+Shapes read by more than one screen are Eloquent API Resources, per [ADR-0004](../../adr/0004-payloads-are-api-resources.md): `PostResource` for the Feed, the Post detail page and the post list on a Profile; `PersonResource` for the three Friends sections and the Profile. A resource shapes what a query resolved — it never queries per row, which would undo the paragraph above. Payloads with a single reader stay inline in their controller.
+
 ### Front end
 
-The Profile receives a single `friendship_status` prop computed server-side; the component switches on it. No client-side reasoning about the graph.
+The Profile receives a single `relationship_state` value computed server-side; the component switches on it. No client-side reasoning about the graph. It is the same value every friends list row carries, so `RelationshipAction` is one component shared by both — the four states are switched on in one place. Alongside it rides `is_self`, the one thing the state cannot express, because nobody is in a friendship with themselves.
 
 Components are built as reusable pieces from the start, not refactored into shape at the end: `PostCard`, `PostForm` (shared by create and edit), `CommentItem`, `LikeButton`, `UserAvatar`, `EmptyState`, `Paginator`. shadcn/ui primitives underneath. Sidebar shell variant, three navigation items — Feed, Friends, My Profile — with the kit's existing user menu untouched for settings and logout.
 

@@ -79,6 +79,25 @@ class Post extends Model
     }
 
     /**
+     * A post list as a screen needs it: the author for the byline, the counts
+     * and the viewer's own like resolved in this one query, limited to what
+     * the viewer may read, newest first.
+     *
+     * The feed and the post list on a profile differ only in whether they
+     * narrow it to one author, so the rest is written once.
+     *
+     * @param  Builder<$this>  $query
+     */
+    public function scopeReadableBy(Builder $query, User $viewer): void
+    {
+        $query->with('author')
+            ->withCount('comments')
+            ->withLikeState($viewer)
+            ->visibleTo($viewer)
+            ->latest();
+    }
+
+    /**
      * Limit to the posts this person is allowed to read: their own, and those
      * written by someone they are in an accepted friendship with, matched on
      * either side.
