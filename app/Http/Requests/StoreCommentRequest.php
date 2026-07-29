@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-class StorePostRequest extends BodyRequest
+class StoreCommentRequest extends BodyRequest
 {
     /**
      * Get the custom validation messages.
@@ -12,7 +12,7 @@ class StorePostRequest extends BodyRequest
     public function messages(): array
     {
         return [
-            'body.required' => __('Write something before posting.'),
+            'body.required' => __('Write something before commenting.'),
         ];
     }
 }

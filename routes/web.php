@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\FriendshipController;
 use App\Http\Controllers\LikeController;
@@ -43,6 +44,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('posts/{post}/likes', [LikeController::class, 'destroy'])
         ->can('view', 'post')
         ->name('posts.likes.destroy');
+
+    // Commenting authorizes against the parent post's view ability for the
+    // same reason liking does: the visibility rule has to hold for writes as
+    // well as reads. There is no index route — the detail page carries the
+    // thread — and no update or destroy: comments are append-only.
+    Route::post('posts/{post}/comments', [CommentController::class, 'store'])
+        ->can('view', 'post')
+        ->name('posts.comments.store');
 
     // Three routes, one page component with a variant, so each section of the
     // friends destination is directly linkable and independently testable.

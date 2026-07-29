@@ -24,7 +24,7 @@ This ticket writes the first migration and sets the pattern every later one foll
 - [x] Empty or whitespace-only text is rejected with a visible error.
 - [x] Line breaks in the text survive rendering.
 - [x] The Feed lists the person's own Posts, newest first.
-- [ ] Like and Comment counts are read from the query via `withCount`, not stored on the Post.
+- [x] Like and Comment counts are read from the query via `withCount`, not stored on the Post.
 - [x] Author is eager-loaded wherever Posts are listed.
 - [x] A factory exists for Posts, usable with an explicit Author.
 - [x] `PostCard` and `UserAvatar` exist as reusable components from the start.
@@ -32,10 +32,15 @@ This ticket writes the first migration and sets the pattern every later one foll
 
 ## Notes on delivery
 
-One criterion is left open.
+One criterion was left open, and is now closed.
 
-**The `withCount` aggregates are unticked.** Likes and Comments do not exist
-yet — there are no `likes` or `comments` tables — so `postPayload()` sends
-hardcoded zeroes and there is nothing honest to aggregate. The criterion is
+**The `withCount` aggregates were unticked.** Likes and Comments did not exist
+yet — there were no `likes` or `comments` tables — so `postPayload()` sent
+hardcoded zeroes and there was nothing honest to aggregate. The criterion was
 really a constraint on tickets 07 and 08: read both counts from the query with
 `withCount()`, never from a column on the Post.
+
+Both now do. Ticket 07 resolved the like count through
+`Post::scopeWithLikeState`, and [08](08-comment-on-a-post.md) added
+`withCount('comments')` to the Feed query and the detail lookup. Neither count
+is stored on the Post, and the criterion is ticked as of 08.

@@ -24,6 +24,15 @@ type Props = {
 };
 
 export function PostCard({ post, linked = true, reloadProp = 'posts' }: Props) {
+    /** The same count either way; only what wraps it differs. */
+    const commentCount = (
+        <>
+            <MessageCircle className="size-4" aria-hidden="true" />
+            {post.comments_count}
+            <span className="sr-only">comments</span>
+        </>
+    );
+
     return (
         <Card data-test="post-card">
             <CardContent className="flex gap-3">
@@ -80,14 +89,24 @@ export function PostCard({ post, linked = true, reloadProp = 'posts' }: Props) {
                             )}
                         </Form>
 
-                        <span className="flex items-center gap-1.5">
-                            <MessageCircle
-                                className="size-4"
-                                aria-hidden="true"
-                            />
-                            {post.comments_count}
-                            <span className="sr-only">comments</span>
-                        </span>
+                        {/*
+                         * Comments are only ever written on the detail page,
+                         * so the feed's count is the way through to them
+                         * rather than a composer of its own.
+                         */}
+                        {linked ? (
+                            <Link
+                                href={show(post.id)}
+                                className="flex items-center gap-1.5 hover:underline"
+                                data-test="comments-link"
+                            >
+                                {commentCount}
+                            </Link>
+                        ) : (
+                            <span className="flex items-center gap-1.5">
+                                {commentCount}
+                            </span>
+                        )}
 
                         {(post.can.update || post.can.delete) && (
                             <div className="ml-auto flex items-center gap-1">

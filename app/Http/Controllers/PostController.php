@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
+use App\Models\Comment;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -20,6 +21,7 @@ class PostController extends Controller
     {
         $posts = Post::query()
             ->with('author')
+            ->withCount('comments')
             ->withLikeState($request->user())
             ->visibleTo($request->user())
             ->latest()
@@ -47,10 +49,21 @@ class PostController extends Controller
      */
     public function show(Request $request, Post $post): Response
     {
-        $post->load('author')->loadLikeState($request->user());
+        $post->load('author')->loadCount('comments')->loadLikeState($request->user());
+
+        // Oldest-first, so the thread reads as the conversation happened. The
+        // id breaks the tie: two comments written in the same second — which
+        // the seeder and the factories both produce — would otherwise come
+        // back in whatever order SQLite felt like.
+        $comments = $post->comments()
+            ->with('author')
+            ->oldest()
+            ->oldest('id')
+            ->get();
 
         return Inertia::render('posts/show', [
             'post' => $this->postPayload($post, $request->user()),
+            'comments' => $comments->map($this->commentPayload(...)),
         ]);
     }
 
@@ -111,12 +124,30 @@ class PostController extends Controller
             'likes_count' => $post->likes_count,
             // Resolved in the query that loaded the post, not asked per card.
             'liked' => (bool) $post->liked,
-            // Comments do not exist yet; this becomes a withCount() aggregate
-            // when that relation lands.
-            'comments_count' => 0,
+            'comments_count' => $post->comments_count,
             'can' => [
                 'update' => $viewer->can('update', $post),
                 'delete' => $viewer->can('delete', $post),
+            ],
+        ];
+    }
+
+    /**
+     * The shape the detail page reads a comment in. Comments are never edited
+     * or deleted, so there are no abilities to report alongside them.
+     *
+     * @return array<string, mixed>
+     */
+    private function commentPayload(Comment $comment): array
+    {
+        return [
+            'id' => $comment->id,
+            'body' => $comment->body,
+            'created_at' => $comment->created_at->toIso8601String(),
+            'created_at_diff' => $comment->created_at->diffForHumans(),
+            'author' => [
+                'id' => $comment->author->id,
+                'name' => $comment->author->name,
             ],
         ];
     }

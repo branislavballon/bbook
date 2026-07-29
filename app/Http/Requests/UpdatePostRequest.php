@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-class UpdatePostRequest extends PostRequest
+class UpdatePostRequest extends BodyRequest
 {
     /**
      * Get the custom validation messages.

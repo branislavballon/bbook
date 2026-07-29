@@ -19,6 +19,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $updated_at
  * @property-read User $author
  * @property-read int $likes_count
+ * @property-read int $comments_count
  * @property-read bool $liked
  */
 #[Fillable(['body'])]
@@ -45,6 +46,16 @@ class Post extends Model
     public function likes(): HasMany
     {
         return $this->hasMany(Like::class);
+    }
+
+    /**
+     * The comments written on this post.
+     *
+     * @return HasMany<Comment, $this>
+     */
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
     }
 
     /**

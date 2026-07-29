@@ -6,10 +6,16 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * The rules a post body has to satisfy, whether it is being written or edited.
- * Authorization stays in the controller, through PostPolicy.
+ * The rules a piece of written text has to satisfy — required, trimmed and
+ * capped — whether it is a post being written or edited, or a comment being
+ * added. The spec states that as one rule for both, so it is written once and
+ * the subclasses supply only the wording of the refusal.
+ *
+ * Authorization is not asked here: every route that reaches one of these has
+ * already run its policy as route middleware, so someone who may not act on
+ * the post is refused rather than told their text is wrong.
  */
-abstract class PostRequest extends FormRequest
+abstract class BodyRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -25,7 +31,7 @@ abstract class PostRequest extends FormRequest
 
     /**
      * Trim the body before validation, so whitespace-only text fails the
-     * "required" rule instead of being stored as an empty post.
+     * "required" rule instead of being stored as empty.
      */
     protected function prepareForValidation(): void
     {

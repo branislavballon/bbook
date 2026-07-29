@@ -17,18 +17,18 @@ A person opens a Post from the Feed onto its own detail page. From there, or fro
 - [x] Creating and editing share one `PostForm` component, parameterised by initial values, submit label and target.
 - [x] Editing is validated by its own Form Request with the same rules as creation.
 - [x] Deleting asks for confirmation first, reusing the pattern already used for account deletion.
-- [ ] Deleting a Post disposes of everything attached to it, by database cascade.
+- [x] Deleting a Post disposes of everything attached to it, by database cascade.
 - [x] `PostPolicy` carries `update` and `delete`; controllers authorize through it and never check ownership inline.
 - [x] Opening the edit page for another person's Post is refused, as is saving or deleting it.
 - [x] Test: a person cannot delete a Post authored by someone else.
 
 ## Notes on delivery
 
-Two criteria are ticked with a qualification, and one is left open.
+Two criteria were ticked with a qualification, and one was left open. Both are now settled.
 
-**Counts** on the detail page render as the same hardcoded zeroes the Feed uses. They become `withCount()` aggregates when Likes and Comments land.
+**Counts** on the detail page rendered as the same hardcoded zeroes the Feed used. They are now `withCount()` aggregates: likes from ticket 07, comments from [08](08-comment-on-a-post.md).
 
-**The cascade is unticked.** Nothing is attached to a Post yet — there are no `likes` or `comments` tables — so there is nothing to cascade and nothing honest to test. `posts.user_id` already carries `cascadeOnDelete()`. This criterion is really a constraint on the Likes and Comments tickets: declare the foreign key inside `Schema::create` with `cascadeOnDelete()`, per [ADR-0002](../../adr/0002-hard-deletes-with-database-cascades.md), and prove it with the spec's test 9.
+**The cascade was unticked.** Nothing was attached to a Post yet — there were no `likes` or `comments` tables — so there was nothing to cascade and nothing honest to test. This criterion was really a constraint on the Likes and Comments tickets: declare the foreign key inside `Schema::create` with `cascadeOnDelete()`, per [ADR-0002](../../adr/0002-hard-deletes-with-database-cascades.md), and prove it with the spec's test 9. Both tables did, and the spec's test 9 — *deleting a Post removes its Likes and Comments* — lands in `tests/Feature/CommentTest.php` with 08, so the criterion is ticked as of 08.
 
 **Authorization runs as `->can()` route middleware** rather than a `Gate::authorize()` call in the controller body. Still `PostPolicy`, still never an inline ownership check — but the policy now runs *before* the Form Request validates, so a stranger saving invalid text at someone else's Post is refused rather than told their text is wrong.
 
