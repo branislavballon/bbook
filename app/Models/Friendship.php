@@ -81,9 +81,27 @@ class Friendship extends Model
      */
     public function counterpartIdFor(User $user): int
     {
-        return $this->requester_id === $user->id
-            ? $this->addressee_id
-            : $this->requester_id;
+        return $this->isRequester($user) ? $this->addressee_id : $this->requester_id;
+    }
+
+    /**
+     * The other person themselves. Friendship reads as mutual, so no list
+     * built from this asks which side the viewer is on.
+     *
+     * Takes the id-only variant's place wherever the person is wanted rather
+     * than their key; both relations must be loaded to avoid a query per row.
+     */
+    public function counterpartFor(User $user): User
+    {
+        return $this->isRequester($user) ? $this->addressee : $this->requester;
+    }
+
+    /**
+     * Which side of the friendship this person is on.
+     */
+    private function isRequester(User $user): bool
+    {
+        return $this->requester_id === $user->id;
     }
 
     /**

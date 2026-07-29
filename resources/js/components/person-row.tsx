@@ -1,5 +1,5 @@
 import { Form } from '@inertiajs/react';
-import { Clock, UserCheck, UserPlus } from 'lucide-react';
+import { Check, Clock, UserCheck, UserPlus, X } from 'lucide-react';
 import FriendshipController from '@/actions/App/Http/Controllers/FriendshipController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,8 +12,9 @@ type Props = {
 };
 
 /**
- * One person in a friends list, with whatever action their current
- * relationship state allows — which is exactly one thing, never a choice.
+ * One person in a friends list, showing whatever their current relationship
+ * state allows: a single action, a statement of fact, or — for a request
+ * waiting on this person — the two answers to it.
  */
 export function PersonRow({ person }: Props) {
     return (
@@ -72,13 +73,48 @@ function RelationshipAction({ person }: Props) {
             );
 
         case 'request_received':
-            // Accepting and rejecting arrive with the requests section; until
-            // then the row states the fact without offering an action.
+            // The one state with a choice in it. Both answers are offered
+            // wherever the request appears — the Requests section and the row
+            // for that person in Find People — so neither screen is a dead end.
             return (
-                <Badge variant="secondary" data-test="request-received">
-                    <Clock className="size-3" aria-hidden="true" />
-                    Wants to be your friend
-                </Badge>
+                <div className="flex items-center gap-2">
+                    <Form
+                        {...FriendshipController.update.form(
+                            person.friendship_id,
+                        )}
+                        options={{ preserveScroll: true }}
+                    >
+                        {({ processing }) => (
+                            <Button
+                                size="sm"
+                                disabled={processing}
+                                data-test="accept-friend-request"
+                            >
+                                <Check className="size-4" aria-hidden="true" />
+                                Accept
+                            </Button>
+                        )}
+                    </Form>
+
+                    <Form
+                        {...FriendshipController.destroy.form(
+                            person.friendship_id,
+                        )}
+                        options={{ preserveScroll: true }}
+                    >
+                        {({ processing }) => (
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={processing}
+                                data-test="reject-friend-request"
+                            >
+                                <X className="size-4" aria-hidden="true" />
+                                Reject
+                            </Button>
+                        )}
+                    </Form>
+                </div>
             );
 
         case 'friends':

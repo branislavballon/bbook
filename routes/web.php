@@ -34,6 +34,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('friends/find', [FriendController::class, 'find'])->name('friends.find');
 
     Route::post('friendships', [FriendshipController::class, 'store'])->name('friendships.store');
+
+    // FriendshipPolicy::respond gates both answers, as route middleware for
+    // the same reason PostPolicy is: only the addressee decides, and that is
+    // refused before the controller does anything.
+    Route::patch('friendships/{friendship}', [FriendshipController::class, 'update'])
+        ->can('respond', 'friendship')
+        ->name('friendships.update');
+
+    Route::delete('friendships/{friendship}', [FriendshipController::class, 'destroy'])
+        ->can('respond', 'friendship')
+        ->name('friendships.destroy');
 });
 
 require __DIR__.'/settings.php';

@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\FriendshipStatus;
 use App\Enums\RelationshipState;
 use App\Models\Friendship;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -15,28 +15,59 @@ use Inertia\Response;
  * rendering one page component with a variant, so each is linkable,
  * back-navigable and testable on its own.
  *
- * @phpstan-type PersonPayload array{id: int, name: string, relationship_state: string}
+ * @phpstan-type PersonPayload array{id: int, name: string, relationship_state: string, friendship_id: int|null}
  */
 class FriendController extends Controller
 {
     /**
      * The people this person is friends with.
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        // Accepting a request is ticket 05; until it exists nothing can reach
-        // the accepted state through the interface, so this section is its
-        // empty state and nothing else.
-        return $this->section('friends', collect());
+        $viewer = $request->user();
+
+        // Matched on either side: someone who accepted this person's request
+        // and someone whose request this person accepted are the same thing.
+        $people = Friendship::query()
+            ->involving($viewer)
+            ->where('status', FriendshipStatus::Accepted)
+            ->with(['requester', 'addressee'])
+            ->get()
+            ->map(fn (Friendship $friendship): array => $this->personPayload(
+                $friendship->counterpartFor($viewer),
+                $friendship,
+                $viewer,
+            ))
+            ->sortBy('name')
+            ->values()
+            ->all();
+
+        return $this->section('friends', $people);
     }
 
     /**
-     * The friend requests waiting for this person's answer.
+     * The friend requests waiting for this person's answer. Requests this
+     * person sent are not here — those show as pending in Find People.
      */
-    public function requests(): Response
+    public function requests(Request $request): Response
     {
-        // Responding to a request is ticket 05, as above.
-        return $this->section('requests', collect());
+        $viewer = $request->user();
+
+        $people = Friendship::query()
+            ->where('addressee_id', $viewer->id)
+            ->where('status', FriendshipStatus::Pending)
+            ->with('requester')
+            ->latest()
+            ->get()
+            ->map(fn (Friendship $friendship): array => $this->personPayload(
+                $friendship->requester,
+                $friendship,
+                $viewer,
+            ))
+            ->values()
+            ->all();
+
+        return $this->section('requests', $people);
     }
 
     /**
@@ -59,13 +90,16 @@ class FriendController extends Controller
                 $person,
                 $friendships->get($person->id),
                 $viewer,
-            ));
+            ))
+            ->values()
+            ->all();
 
         return $this->section('find', $people);
     }
 
     /**
-     * The shape every friends list reads a person in.
+     * The shape every friends list reads a person in. The friendship's id
+     * rides along so a row can answer the request it is showing.
      *
      * @return PersonPayload
      */
@@ -75,19 +109,20 @@ class FriendController extends Controller
             'id' => $person->id,
             'name' => $person->name,
             'relationship_state' => RelationshipState::forViewer($friendship, $viewer)->value,
+            'friendship_id' => $friendship?->id,
         ];
     }
 
     /**
      * Render the friends page in one of its three variants.
      *
-     * @param  Collection<int, PersonPayload>  $people
+     * @param  array<int, PersonPayload>  $people
      */
-    private function section(string $variant, Collection $people): Response
+    private function section(string $variant, array $people): Response
     {
         return Inertia::render('friends/index', [
             'variant' => $variant,
-            'people' => $people->values(),
+            'people' => $people,
         ]);
     }
 }
