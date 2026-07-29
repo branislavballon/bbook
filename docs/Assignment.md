@@ -337,11 +337,13 @@ To be decided before implementation:
 
 3. Layout + basic reusable components
 
-4. Feed
+4. Post CRUD (including `PostPolicy` and Form Requests)
 
-5. Post CRUD (including `PostPolicy` and Form Requests)
+5. Friends (`Friendship` model, requests, confirmation, `FriendshipPolicy`)
 
-6. Friends (`Friendship` model, requests, confirmation, `FriendshipPolicy`) + feed limited to friends
+6. Feed, limited to own posts + friends' posts
+
+   > **Reordered:** friends now come before the feed. Posts are visible only to the author and their friends ([ADR-0001](adr/0001-posts-are-visible-to-friends-only.md)), so the visibility scope the feed is built on cannot exist until the `Friendship` model does. Building the feed first would mean writing it twice.
 
 7. Likes
 
@@ -363,12 +365,16 @@ To be decided before implementation:
 
 Throughout implementation, the following will be documented on an ongoing basis:
 
-- architectural decisions (mini-ADRs in `docs/` or in the README)
+- architectural decisions (mini-ADRs in `docs/adr/`)
 
-- AI prompts (a log of the prompts used during agentic coding)
+- the domain glossary (`CONTEXT.md`), kept current as terms are settled
+
+- the development plan and its progress (a spec in `docs/specs/`, tickets with a `Status:` line in `docs/tickets/`)
 
 - reasons for individual solutions
 
 - commit history (conventional commits – feat/fix/refactor – for a readable history)
+
+> **Decision:** no verbatim log of AI prompts is kept. The process record is the spec, the tickets and their `Status:` transitions, the ADRs, and the conventional commit history — these show the reasoning and the order it happened in, which a raw transcript buries rather than reveals.
 
 The project will be published in its own Git repository as required.
