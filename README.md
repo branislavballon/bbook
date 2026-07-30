@@ -70,6 +70,10 @@ npm run types:check           # tsc --noEmit
 npm run lint:check            # ESLint
 ```
 
+`composer ci:check` is also what CI runs: `.github/workflows/tests.yml` sets the
+application up from scratch and runs the same command on every push to `main`,
+on every pull request, and on demand.
+
 ## The data model
 
 Five tables, four of them this application's own. `users` is the starter kit's.
@@ -194,6 +198,51 @@ decisions rather than revealing them. The conventions the agent worked under
 are themselves checked in, in [CLAUDE.md](CLAUDE.md) and
 [docs/agents/](docs/agents/).
 
+## The AI toolchain
+
+The assignment asks for AI agentic coding, so the tooling is part of the
+deliverable. Three pieces, each chosen for a failure it prevents.
+
+**[Claude Code](https://claude.com/claude-code)** is the agent, and its
+instructions are checked in rather than held in a chat window:
+[CLAUDE.md](CLAUDE.md) holds the rules that had to survive every session — the
+assignment is the scope authority, the Definition of Done, who may commit — and
+[docs/agents/](docs/agents/) holds the conventions the process skills read. A
+rule in a file is re-read on every task; a rule said once in a conversation is
+gone by the next one.
+
+**[Laravel Boost](https://github.com/laravel/boost)** is an MCP server, run out
+of the application itself (`.mcp.json` → `php artisan boost:mcp`). Its tools read
+this application rather than guess at it: `search-docs` returns documentation
+scoped to the packages actually installed, `database-schema` before a migration,
+`database-query` against the real SQLite file, `last-error` and
+`read-log-entries` when something threw. It also installs the framework skills
+that ship inside the packages — `laravel-best-practices`, `pest-testing`,
+`inertia-react-development`, `wayfinder-development`, `fortify-development`,
+`tailwindcss-development` — and its guidelines are the
+`<laravel-boost-guidelines>` block at the top of CLAUDE.md.
+
+**[AI Skills for Real Engineers](https://www.aihero.dev/skills)**, Matt Pocock's
+skill set, supplied the process: 21 skills vendored into
+[.claude/skills/](.claude/skills/) and pinned by content hash in
+`skills-lock.json`, so the workflow is reproducible from a clone. Boost tells the
+agent how to write Laravel; these tell it how to work. `to-spec` writes the spec,
+`to-tickets` splits it into slices, `triage` sets the `Status:` lines,
+`domain-modeling` maintains [CONTEXT.md](CONTEXT.md) and the ADRs, `tdd` and
+`implement` run a slice, `diagnosing-bugs` and `code-review` close it, and
+`grilling` attacks a plan before code exists for it. The four process artefacts
+above are those skills' output formats — which is why the documentation is
+uniform: same pipeline every time, not written up afterwards.
+
+Alongside these, the
+[Chrome DevTools MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp)
+drives a real browser, and stands in for the missing front-end test runner —
+[What is not tested, and why](#what-is-not-tested-and-why).
+
+None of this decides anything. Scope came from the assignment, the trade-offs are
+argued in the ADRs, and every acceptance criterion was ticked against a command
+that ran — which is a different claim from the agent having worked unsupervised.
+
 ## Out of scope
 
 Everything the assignment lists under "Not to implement for now": messenger and
@@ -291,12 +340,17 @@ omission:
   components that hold logic — `RelationshipAction`'s four states, `LikeButton`,
   `Paginator` and `PostCard`'s ownership affordances — roughly half a day.
   Adding a dependency was out of scope for the assignment's time budget.
-- **CI is manual-only.** `.github/workflows/tests.yml` runs `composer setup` and
-  `composer ci:check` on `workflow_dispatch`; the `push` and `pull_request`
-  triggers are commented out to keep an interview repository from burning
-  Actions minutes on every push. Re-enabling it is uncommenting them.
 - **Starter-kit leftovers.** `tests/Unit/ExampleTest.php` is the skeleton's, and
   the unused starter-kit layout variants (`app-header-layout`,
   `auth-card-layout`, `auth-split-layout`) are reachable from nothing — they are
   kept as options rather than deleted. Neither affects the application; both are
   noted rather than quietly left.
+
+## What's next
+
+**Apply the prepared visual design.** The MVP wears the starter kit's default
+look on purpose — behaviour first. The design already exists as a working Claude
+artifact,
+[Visual refresh with Tailwind customization](https://claude.ai/code/artifact/b5a83193-1a90-484b-9dc7-201a2685e4f0):
+a Tailwind theme change plus a pass over the shared components, touching no
+route, prop shape or test. Its own ticket, not a diff on the shipped ones.
