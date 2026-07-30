@@ -1,6 +1,6 @@
 # 16 — Avatars and likes get colour and motion
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 **Blocked by:** nothing.
 
@@ -80,16 +80,16 @@ and it must actually be driven rather than assumed.
 
 ## Acceptance criteria
 
-- [ ] Pressing Like pops the heart immediately, before the server has answered.
-- [ ] The count still comes from the server and is never mirrored client-side.
-- [ ] Unliking does not pop; the fill eases away.
-- [ ] The pop does not replay on re-render — paging the Feed, opening a Post and returning, or liking one post leaves every other heart still.
-- [ ] Under `prefers-reduced-motion` the heart changes state without animating.
-- [ ] The Like button's accessible name and pressed state are unchanged.
-- [ ] Each person's avatar has a colour taken from their whole name, and the same person is the same colour on every screen they appear on.
-- [ ] Two people with the same initials get different colours.
-- [ ] Every palette entry is legible in both light and dark mode, against its own initials.
-- [ ] The user menu's avatar uses the shared component and takes a colour like every other avatar.
-- [ ] No avatar anywhere attempts to load an image.
-- [ ] The frontend guardrails pass: `npm run types:check` and `npm run lint:check`.
-- [ ] Verified in a browser: liking and unliking on both the Feed and a Post's detail page, a Feed and a friends list showing visibly varied avatar colours, and the same person's colour matching between a list, their Profile and the header — in both light and dark mode, with the console clean of React and Inertia errors and the Like requests answering as expected.
+- [x] Pressing Like pops the heart immediately, before the server has answered.
+- [x] The count still comes from the server and is never mirrored client-side.
+- [x] Unliking does not pop; the fill eases away.
+- [x] The pop does not replay on re-render — paging the Feed, opening a Post and returning, or liking one post leaves every other heart still.
+- [x] Under `prefers-reduced-motion` the heart changes state without animating.
+- [x] The Like button's accessible name and pressed state are unchanged.
+- [x] Each person's avatar has a colour taken from their whole name, and the same person is the same colour on every screen they appear on.
+- [x] Two people with the same initials get different colours.
+- [x] Every palette entry is legible in both light and dark mode, against its own initials.
+- [x] The user menu's avatar uses the shared component and takes a colour like every other avatar.
+- [x] No avatar anywhere attempts to load an image.
+- [x] The frontend guardrails pass: `npm run types:check` and `npm run lint:check`.
+- [x] Verified in a browser: liking and unliking on both the Feed and a Post's detail page, a Feed and a friends list showing visibly varied avatar colours, and the same person's colour matching between a list, their Profile and the header — in both light and dark mode, with the console clean of React and Inertia errors and the Like requests answering as expected.
