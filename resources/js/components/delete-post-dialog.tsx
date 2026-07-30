@@ -24,7 +24,11 @@ export function DeletePostDialog({ postId }: Props) {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant="ghost" size="sm" data-test="delete-post-button">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    data-test="delete-post-button"
+                >
                     <Trash2 className="size-4" aria-hidden="true" />
                     Delete
                 </Button>
