@@ -2,16 +2,18 @@ import { Head, Link } from '@inertiajs/react';
 import { Newspaper, UserPlus } from 'lucide-react';
 import PostController from '@/actions/App/Http/Controllers/PostController';
 import { EmptyState } from '@/components/empty-state';
+import { Paginator } from '@/components/paginator';
 import { PostCard } from '@/components/post-card';
 import { PostForm } from '@/components/post-form';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { feed } from '@/routes';
 import { find } from '@/routes/friends';
+import type { Paginated } from '@/types/pagination';
 import type { Post } from '@/types/posts';
 
 type Props = {
-    posts: Post[];
+    posts: Paginated<Post>;
 };
 
 export default function Feed({ posts }: Props) {
@@ -28,7 +30,7 @@ export default function Feed({ posts }: Props) {
                     </CardContent>
                 </Card>
 
-                {posts.length === 0 ? (
+                {posts.data.length === 0 ? (
                     <EmptyState
                         icon={Newspaper}
                         title="Your feed is empty"
@@ -45,11 +47,15 @@ export default function Feed({ posts }: Props) {
                         </Button>
                     </EmptyState>
                 ) : (
-                    <div className="flex flex-col gap-4">
-                        {posts.map((post) => (
-                            <PostCard key={post.id} post={post} />
-                        ))}
-                    </div>
+                    <>
+                        <div className="flex flex-col gap-4">
+                            {posts.data.map((post) => (
+                                <PostCard key={post.id} post={post} />
+                            ))}
+                        </div>
+
+                        <Paginator page={posts} label="Feed" />
+                    </>
                 )}
             </div>
         </>

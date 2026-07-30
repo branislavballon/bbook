@@ -169,7 +169,7 @@ test('the feed carries the comment count of each post', function () {
         ->get(route('feed'))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('feed')
-            ->where('posts.0.comments_count', 3)
+            ->where('posts.data.0.comments_count', 3)
         );
 });
 

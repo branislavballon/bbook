@@ -7,6 +7,7 @@ use App\Http\Resources\PersonResource;
 use App\Models\Friendship;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -69,7 +70,9 @@ class FriendController extends Controller
     }
 
     /**
-     * Everyone on the network, and where the viewer stands with each of them.
+     * Everyone on the network, and where the viewer stands with each of them,
+     * a page at a time. This is the other list that grows without bound, so
+     * it pages the way the feed does.
      */
     public function find(Request $request): Response
     {
@@ -83,24 +86,26 @@ class FriendController extends Controller
         $people = User::query()
             ->whereKeyNot($viewer->id)
             ->orderBy('name')
-            ->get()
-            ->map(fn (User $person): PersonResource => new PersonResource(
+            ->paginate(self::PER_PAGE)
+            ->through(fn (User $person): PersonResource => new PersonResource(
                 $person,
                 $friendships->get($person->id),
                 $viewer,
-            ))
-            ->values()
-            ->all();
+            ));
 
-        return $this->section('find', $people);
+        return $this->section('find', PersonResource::collection($people));
     }
 
     /**
      * Render the friends page in one of its three variants.
      *
-     * @param  array<int, PersonResource>  $people
+     * Find People arrives as a paginator envelope — `data`, `links`, `meta` —
+     * while the two naturally small sections arrive as a plain list. The page
+     * component reads the shape its variant implies.
+     *
+     * @param  array<int, PersonResource>|AnonymousResourceCollection  $people
      */
-    private function section(string $variant, array $people): Response
+    private function section(string $variant, array|AnonymousResourceCollection $people): Response
     {
         return Inertia::render('friends/index', [
             'variant' => $variant,

@@ -86,6 +86,7 @@ class Post extends Model
      * The feed and the post list on a profile differ only in whether they
      * narrow it to one author, so the rest is written once.
      *
+     *
      * @param  Builder<$this>  $query
      */
     public function scopeReadableBy(Builder $query, User $viewer): void
@@ -94,7 +95,8 @@ class Post extends Model
             ->withCount('comments')
             ->withLikeState($viewer)
             ->visibleTo($viewer)
-            ->latest();
+            ->latest()
+            ->latest('id');
     }
 
     /**

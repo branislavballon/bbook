@@ -51,14 +51,64 @@ test('find people lists everyone on the network except the viewer', function () 
     $this->actingAs($user)->get(route('friends.find'))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('variant', 'find')
-            ->has('people', 2)
-            ->where('people.0.id', $other->id)
-            ->where('people.0.name', 'Ada Lovelace')
-            ->where('people.0.relationship_state', 'none')
+            ->has('people.data', 2)
+            ->where('people.data.0.id', $other->id)
+            ->where('people.data.0.name', 'Ada Lovelace')
+            ->where('people.data.0.relationship_state', 'none')
             // The viewer is never in their own list, so the profile page's
             // flag is always false on a row.
-            ->where('people.0.is_self', false)
+            ->where('people.data.0.is_self', false)
         );
+});
+
+test('find people returns ten people per page and the eleventh on the second page', function () {
+    $viewer = User::factory()->create();
+
+    // Ordered by name, so the sequence is the page order and the eleventh
+    // person is the only one on page two.
+    $people = collect(range(1, 11))->map(fn (int $position): User => User::factory()
+        ->create(['name' => sprintf('Person %02d', $position)]));
+
+    $this->actingAs($viewer)->get(route('friends.find'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('people.data', 10)
+            ->where('people.data.0.id', $people->first()->id)
+            ->where('people.meta.current_page', 1)
+            ->where('people.meta.last_page', 2)
+            ->where('people.meta.total', 11)
+        );
+
+    $this->actingAs($viewer)->get(route('friends.find', ['page' => 2]))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('people.data', 1)
+            ->where('people.data.0.id', $people->last()->id)
+            ->where('people.meta.current_page', 2)
+        );
+});
+
+test('the friends and requests sections stay unpaginated', function () {
+    $viewer = User::factory()->create();
+
+    User::factory()->count(12)->create()->each(function (User $person) use ($viewer): void {
+        Friendship::factory()->accepted()->create([
+            'requester_id' => $person->id,
+            'addressee_id' => $viewer->id,
+        ]);
+    });
+
+    User::factory()->count(12)->create()->each(function (User $person) use ($viewer): void {
+        Friendship::factory()->pending()->create([
+            'requester_id' => $person->id,
+            'addressee_id' => $viewer->id,
+        ]);
+    });
+
+    // A plain list rather than a paginator envelope, and all of it.
+    $this->actingAs($viewer)->get(route('friends.index'))
+        ->assertInertia(fn (AssertableInertia $page) => $page->has('people', 12));
+
+    $this->actingAs($viewer)->get(route('friends.requests'))
+        ->assertInertia(fn (AssertableInertia $page) => $page->has('people', 12));
 });
 
 test('find people shows the current relationship state per row', function () {
@@ -84,13 +134,13 @@ test('find people shows the current relationship state per row', function () {
 
     $this->actingAs($user)->get(route('friends.find'))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->has('people', 3)
-            ->where('people.0.relationship_state', 'request_sent')
-            ->where('people.1.relationship_state', 'request_received')
-            ->where('people.2.relationship_state', 'friends')
+            ->has('people.data', 3)
+            ->where('people.data.0.relationship_state', 'request_sent')
+            ->where('people.data.1.relationship_state', 'request_received')
+            ->where('people.data.2.relationship_state', 'friends')
             // The row carries what it needs to answer the request, so the
             // incoming request is actionable here and not only in Requests.
-            ->where('people.1.friendship_id', $incoming->id)
+            ->where('people.data.1.friendship_id', $incoming->id)
         );
 });
 
@@ -112,7 +162,7 @@ test('a person can send a friend request and the row turns pending', function ()
 
     $this->actingAs($user)->get(route('friends.find'))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('people.0.relationship_state', 'request_sent')
+            ->where('people.data.0.relationship_state', 'request_sent')
         );
 });
 
@@ -425,7 +475,7 @@ test('a request the viewer sent stays visibly pending in find people', function 
 
     $this->actingAs($viewer)->get(route('friends.find'))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('people.0.relationship_state', 'request_sent')
-            ->where('people.0.friendship_id', Friendship::sole()->id)
+            ->where('people.data.0.relationship_state', 'request_sent')
+            ->where('people.data.0.friendship_id', Friendship::sole()->id)
         );
 });

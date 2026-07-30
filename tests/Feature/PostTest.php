@@ -30,11 +30,11 @@ test('an authenticated person can create a post and it appears in their feed', f
         ->get(route('feed'))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('feed')
-            ->has('posts', 1)
-            ->where('posts.0.body', "First line\nSecond line")
-            ->where('posts.0.author.name', $user->name)
-            ->where('posts.0.likes_count', 0)
-            ->where('posts.0.comments_count', 0)
+            ->has('posts.data', 1)
+            ->where('posts.data.0.body', "First line\nSecond line")
+            ->where('posts.data.0.author.name', $user->name)
+            ->where('posts.data.0.likes_count', 0)
+            ->where('posts.data.0.comments_count', 0)
         );
 });
 
@@ -85,9 +85,9 @@ test('the feed lists the persons own posts newest first', function () {
         ->get(route('feed'))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('feed')
-            ->has('posts', 2)
-            ->where('posts.0.id', $newer->id)
-            ->where('posts.1.id', $older->id)
+            ->has('posts.data', 2)
+            ->where('posts.data.0.id', $newer->id)
+            ->where('posts.data.1.id', $older->id)
         );
 });
 

@@ -2,16 +2,23 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import { Inbox, UserPlus, Users } from 'lucide-react';
 import AlertError from '@/components/alert-error';
 import { EmptyState } from '@/components/empty-state';
+import { Paginator } from '@/components/paginator';
 import { PersonRow } from '@/components/person-row';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { find, index, requests } from '@/routes/friends';
 import type { FriendsVariant, Person } from '@/types/friends';
+import type { Paginated } from '@/types/pagination';
 
-type Props = {
-    variant: FriendsVariant;
-    people: Person[];
-};
+/**
+ * Find People is the only section that grows without bound, so it is the only
+ * one that arrives as a page. Friends and Requests are naturally small at this
+ * scale and arrive whole — the union ties each shape to the variant that
+ * sends it, so the page cannot read the wrong one.
+ */
+type Props =
+    | { variant: Exclude<FriendsVariant, 'find'>; people: Person[] }
+    | { variant: 'find'; people: Paginated<Person> };
 
 const sections = [
     { variant: 'friends', title: 'Friends', href: index },
@@ -48,10 +55,12 @@ const emptyStates = {
     },
 } satisfies Record<FriendsVariant, Parameters<typeof EmptyState>[0]>;
 
-export default function Friends({ variant, people }: Props) {
+export default function Friends(props: Props) {
     const { errors } = usePage().props;
+    const { variant } = props;
     const { title } = sectionFor(variant);
     const emptyState = emptyStates[variant];
+    const people = props.variant === 'find' ? props.people.data : props.people;
 
     return (
         <>
@@ -117,6 +126,10 @@ export default function Friends({ variant, people }: Props) {
                             <PersonRow key={person.id} person={person} />
                         ))}
                     </div>
+                )}
+
+                {props.variant === 'find' && (
+                    <Paginator page={props.people} label="Find People" />
                 )}
             </div>
         </>

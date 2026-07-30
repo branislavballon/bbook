@@ -15,11 +15,17 @@ use Inertia\Response;
 class PostController extends Controller
 {
     /**
-     * Show the feed: the posts visible to the current person, newest first.
+     * Show the feed: the posts visible to the current person, newest first,
+     * a page at a time.
+     *
+     * Offset pagination, per ADR-0005: a post written between page views can
+     * shift the boundary and repeat an item, which is accepted at this scale
+     * over cursor pagination's need for a unique sort key, given the identical
+     * timestamps the factories and the seeder produce.
      */
     public function index(Request $request): Response
     {
-        $posts = Post::query()->readableBy($request->user())->get();
+        $posts = Post::query()->readableBy($request->user())->paginate(self::PER_PAGE);
 
         return Inertia::render('feed', [
             'posts' => PostResource::collection($posts),

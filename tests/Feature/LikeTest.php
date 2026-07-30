@@ -20,9 +20,9 @@ test('a person can like their own post and the count comes back from the server'
         ->get(route('feed'))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('feed')
-            ->has('posts', 1)
-            ->where('posts.0.likes_count', 1)
-            ->where('posts.0.liked', true)
+            ->has('posts.data', 1)
+            ->where('posts.data.0.likes_count', 1)
+            ->where('posts.data.0.liked', true)
         );
 });
 
@@ -50,9 +50,9 @@ test('a person can withdraw their like and the count goes back down', function (
         ->get(route('feed'))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('feed')
-            ->has('posts', 1)
-            ->where('posts.0.likes_count', 0)
-            ->where('posts.0.liked', false)
+            ->has('posts.data', 1)
+            ->where('posts.data.0.likes_count', 0)
+            ->where('posts.data.0.liked', false)
         );
 });
 

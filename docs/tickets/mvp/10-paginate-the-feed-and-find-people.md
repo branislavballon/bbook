@@ -1,6 +1,6 @@
 # 10 — Paginate the Feed and Find People
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 **Blocked by:** 06 — Posts are visible to Friends only.
 
@@ -14,10 +14,10 @@ Offset pagination, deliberately. Its known flaw — a Post created between page 
 
 ## Acceptance criteria
 
-- [ ] The Feed returns ten Posts per page, newest first, with the visibility scope still applied.
-- [ ] Find People returns ten people per page.
-- [ ] One reusable paginator component serves both.
-- [ ] Pagination state lives in the URL, so a page is linkable and the back button works.
-- [ ] Counts and eager loading still apply on paginated queries — pagination must not reintroduce a query per row.
-- [ ] Friends, Requests and Comments remain unpaginated.
-- [ ] Test: the Feed returns the first ten Posts, and the eleventh appears on the second page.
+- [x] The Feed returns ten Posts per page, newest first, with the visibility scope still applied.
+- [x] Find People returns ten people per page.
+- [x] One reusable paginator component serves both.
+- [x] Pagination state lives in the URL, so a page is linkable and the back button works.
+- [x] Counts and eager loading still apply on paginated queries — pagination must not reintroduce a query per row.
+- [x] Friends, Requests and Comments remain unpaginated.
+- [x] Test: the Feed returns the first ten Posts, and the eleventh appears on the second page.
