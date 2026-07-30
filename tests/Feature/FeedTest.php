@@ -21,6 +21,16 @@ test('authenticated users can visit the feed', function () {
     $response->assertInertia(fn (AssertableInertia $page) => $page->component('feed'));
 });
 
+test('the feed of someone with nothing written and nobody to read is empty rather than broken', function () {
+    $newcomer = User::factory()->create();
+    Post::factory(3)->create();
+    $this->actingAs($newcomer);
+
+    $this->get(route('feed'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->has('posts.data', 0));
+});
+
 test('the feed holds the persons own posts and their friends, and no strangers', function () {
     $viewer = User::factory()->create();
     $friendWhoAsked = User::factory()->create();

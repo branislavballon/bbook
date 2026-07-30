@@ -179,7 +179,7 @@ Components are built as reusable pieces from the start, not refactored into shap
 
 Factories for every model, with states (`Friendship::factory()->accepted()`, `Post::factory()->for($author)`) so tests compose the same shapes the seeder does.
 
-The seeder builds a deliberate graph rather than random data: a known `demo@example.com` account with several accepted Friends who have Posts, one incoming pending request, one outgoing pending request, several strangers with Posts that must not be visible, Likes and Comments distributed so no count is zero, and a second account with nothing so the new-person path is demonstrable.
+The seeder builds a deliberate graph rather than random data: a known `demo@example.com` account with several accepted Friends who have Posts, one incoming pending request, one outgoing pending request, several strangers with Posts that must not be visible, Likes and Comments distributed so no count is uniformly zero — some Posts carry none, so the no-Comments state stays reachable — and a second account with nothing so the new-person path is demonstrable.
 
 ## Testing Decisions
 
