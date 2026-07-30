@@ -8,6 +8,8 @@ The full MVP described in `docs/Assignment.md`, specified as one document. Termi
 
 The application is a Laravel React starter kit and nothing more. A person can register, log in, manage their account settings, and land on a placeholder dashboard. There is nothing to read, nothing to write, and no one to connect to.
 
+It also looks the part: the page at the root URL advertises the framework, the navigation links to that framework's repository and documentation, and the mark in the sidebar is its logo. Even once the network works, an interface that talks about how it was built is not a product.
+
 Someone using it wants to write short pieces of text, see what the people they know have written without seeing the whole world's output, respond to those pieces of text, and control who can read theirs. None of that exists.
 
 ## Solution
@@ -113,6 +115,16 @@ Around those: Likes, Comments on the Post detail page, a public Profile per pers
 67. As a reviewer, I want Likes and Comments spread across the seeded Posts, so that no count is uniformly zero.
 68. As a reviewer, I want a second seeded account with no Friends and no Posts, so that I can see the new-person path without registering.
 
+### Identity and feedback
+
+69. As a visitor, I want the root URL to take me straight to login, so that I am never shown a page that can only describe the application rather than show it.
+70. As a visitor, I want the login screen to name the application, so that I know what I am signing in to.
+71. As a person using the application, I want it to present itself as a social network and nothing else, so that no part of the interface talks about how it was built.
+72. As an authenticated person, I want to see how many characters remain while I write, so that I learn the limit before I hit it rather than by being refused.
+73. As an authenticated person, I want the composer to stop accepting text at the limit, so that I am never holding text that cannot be posted.
+74. As an authenticated person, I want the submit disabled while the field is empty, so that I cannot start a request whose only possible answer is a refusal.
+75. As an authenticated person, I want the actions on my own Post to be compact but still named, so that the card stays readable without the actions becoming a guess.
+
 ## Implementation Decisions
 
 ### Domain model
@@ -146,6 +158,7 @@ It is applied at four points: the Feed query, the Post detail lookup, the post l
 - Posts follow resourceful naming: index is the Feed, plus show, edit, update, destroy, store. No `create` route — the composer lives on the Feed.
 - Likes are `POST` and `DELETE` on a nested like route. Not a toggle: a toggle does opposite things on identical requests and undoes itself on a retry.
 - Friendship actions: store (send), update (accept), destroy (reject).
+- `/` keeps the `home` name but stops rendering a page: a guest is redirected to login, an authenticated person to the Feed, per [ADR-0006](../../adr/0006-the-root-url-is-an-auth-gate.md). Nothing in the network is readable without an account, so a public page there could only describe the application. The login screen is the front door.
 
 Front-end route access is via Wayfinder-generated helpers, never hardcoded URLs.
 
@@ -155,9 +168,11 @@ Likes use a partial reload with `preserveScroll`, refreshing only the posts prop
 
 Post creation redirects to the Feed with a flash message; editing redirects to the Post detail. Comments are confined to the Post detail page; Feed cards show the count as a link.
 
+The composer states the length limit rather than enforcing it silently: it shows the characters remaining, hard-caps the textarea at the limit, and disables its submit while the field is empty — so the two refusals a person could otherwise only discover by being refused are visible before they act. Because `PostForm` is one component, the Comment box behaves identically. Hard-capping puts the `max` half of the body rule beyond reach of the interface; the rule and its test stay as the defence for anything not coming from this frontend.
+
 ### Validation and authorization
 
-Form Requests only, never inline validation: `StorePostRequest`, `UpdatePostRequest`, `StoreCommentRequest`, `StoreFriendshipRequest`. Post and Comment bodies are required, trimmed, and capped at 1000 characters. `StoreFriendshipRequest` carries the four refusals: self, duplicate, reverse-pending, already-friends.
+Form Requests only, never inline validation: `StorePostRequest`, `UpdatePostRequest`, `StoreCommentRequest`, `StoreFriendshipRequest`. Post and Comment bodies are required, trimmed, and capped at 1000 characters — the cap declared once as a constant on `BodyRequest` and passed to every screen with a composer as a prop, so the counter the person reads and the rule that refuses them cannot drift apart. `StoreFriendshipRequest` carries the four refusals: self, duplicate, reverse-pending, already-friends.
 
 Authorization is by Policy, never an inline controller check.
 
@@ -174,6 +189,10 @@ Shapes read by more than one screen are Eloquent API Resources, per [ADR-0004](.
 The Profile receives a single `relationship_state` value computed server-side; the component switches on it. No client-side reasoning about the graph. It is the same value every friends list row carries, so `RelationshipAction` is one component shared by both — the four states are switched on in one place. Alongside it rides `is_self`, the one thing the state cannot express, because nobody is in a friendship with themselves.
 
 Components are built as reusable pieces from the start, not refactored into shape at the end: `PostCard`, `PostForm` (shared by create and edit), `CommentItem`, `LikeButton`, `UserAvatar`, `EmptyState`, `Paginator`. shadcn/ui primitives underneath. Sidebar shell variant, three navigation items — Feed, Friends, My Profile — with the kit's existing user menu untouched for settings and logout.
+
+The interface presents the application and not the tooling behind it. It is called **Bbook**, named from `config('app.name')` so the string lives in one place; its mark is a book with spectacles, drawn as a single monochrome path so it takes its colour from wherever it is placed; and the logo is that mark beside the name with its first character accented, derived from the name rather than written out. Mark and wordmark are shared components, used by the sidebar and by the auth screens — which, with no page above them, are where a visitor meets the application. Framework references in the interface, including the kit's Repository and Documentation links, are removed; references in `README.md`, `docs/` and the ADRs stay, because the assignment asks for the stack and the decisions to be documented.
+
+Where an action is reduced to its icon — Edit and Delete on a post card — the icon is not the whole of its name: a visually hidden label rides inside the button, because a tooltip is neither reliably announced nor reachable by touch.
 
 ### Demo data
 
