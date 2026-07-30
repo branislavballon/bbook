@@ -70,6 +70,66 @@ npm run types:check           # tsc --noEmit
 npm run lint:check            # ESLint
 ```
 
+## The data model
+
+Five tables, four of them this application's own. `users` is the starter kit's.
+
+```mermaid
+erDiagram
+    users ||--o{ posts : authors
+    users ||--o{ comments : authors
+    users ||--o{ likes : gives
+    posts ||--o{ comments : has
+    posts ||--o{ likes : has
+    users ||--o{ friendships : requests
+    users ||--o{ friendships : receives
+
+    users {
+        id id PK
+        string name
+        string email UK
+    }
+    posts {
+        id id PK
+        id user_id FK "cascade"
+        text body
+    }
+    comments {
+        id id PK
+        id user_id FK "cascade"
+        id post_id FK "cascade"
+        text body
+    }
+    likes {
+        id id PK
+        id user_id FK "cascade, unique with post_id"
+        id post_id FK "cascade, unique with user_id"
+    }
+    friendships {
+        id id PK
+        id requester_id FK "cascade, unique with addressee_id"
+        id addressee_id FK "cascade, unique with requester_id"
+        string status "pending | accepted"
+    }
+```
+
+Every foreign key cascades at the database, so an Author is never nullable
+([ADR-0002](docs/adr/0002-hard-deletes-with-database-cascades.md)); a
+Friendship cascades on **both** sides, or deleting either person would leave
+constraint-violating rows. Like and Comment counts are computed with
+`withCount`, so no table here carries a counter column.
+
+Two rules the diagram cannot show, and they are the two that matter most. A Post
+is readable only by its Author and their Friends — a privacy rule expressed as
+one query scope, not a schema constraint
+([ADR-0001](docs/adr/0001-posts-are-visible-to-friends-only.md)). And the unique
+index on `friendships` catches only the exact duplicate; the reverse-direction
+request — B asking A while A already asked B — is not a database concern and is
+refused in `StoreFriendshipRequest`
+([ADR-0003](docs/adr/0003-friendship-is-one-directional-row.md)). The prose
+version is the spec's
+[Domain model](docs/specs/mvp/spec.md#domain-model) section.
+
 ## Decisions
 
 The reasoning lives in three places, none of which is the code.
@@ -98,6 +158,11 @@ The reasoning lives in three places, none of which is the code.
     - [ADR-0005](docs/adr/0005-two-lists-page-and-pages-arrive-as-an-envelope.md)
       — the Feed and Find People paginate by offset, ten to a page, and a page
       arrives as a `data`/`links`/`meta` envelope both screens share.
+    - [ADR-0006](docs/adr/0006-the-root-url-is-an-auth-gate.md) — `/` is a
+      redirect rather than a page: a guest asking for it is sent to login, an
+      authenticated person to the Feed. Nothing in this network is readable
+      without an account, so a public page there could only ever describe the
+      application, never demonstrate it.
 
 ## The development process
 
@@ -134,10 +199,20 @@ are themselves checked in, in [CLAUDE.md](CLAUDE.md) and
 Everything the assignment lists under "Not to implement for now": messenger and
 chat, sharing Posts, full-text user search (discovery is a paginated list of
 people), groups, pages, reels, stories, any image or video upload — avatars are
-generated from initials — and administration.
+generated from each person's initials, over a colour drawn from their name —
+and administration.
 
 And, by decision rather than by omission:
 
+- **Passkey sign-in.** The starter kit ships it, nothing in the assignment asks
+  for it, and it cost the login screen, the password confirmation screen and
+  the security settings page real surface — three screens a reviewer reads
+  before reaching anything this application was built to do. It is now a flag,
+  `FORTIFY_PASSKEYS_ENABLED`, defaulting to `false`, so a fresh clone is a
+  passwords-only application without anyone having to configure it that way.
+  The four passkey components and the `.well-known/passkey-endpoints` discovery
+  route are deleted rather than left dark
+  (`docs/tickets/mvp/15-passkeys-behind-a-feature-flag.md`).
 - **Unfriending.** There is no transition out of an accepted Friendship
   ([ADR-0003](docs/adr/0003-friendship-is-one-directional-row.md)). The
   assignment lists it nowhere, and adding it means deciding what happens to the
@@ -155,18 +230,28 @@ And, by decision rather than by omission:
   `withCount` on the server; mirroring it client-side would reintroduce exactly
   the synchronisation risk that computing the counts was meant to avoid. The
   request is a partial reload with `preserveScroll`, so acting does not lose
-  your place.
+  your place. The heart does animate the moment it is pressed, which is not the
+  same thing: the gesture is local and the number is not, so the button holds a
+  short-lived press-scoped flag to drive the animation and goes on reading the
+  count off the server.
 - Notifications, realtime updates, tagging, hashtags and bookmarks, all filed
   as future extensions.
 
 ## What is not tested, and why
 
-**Registration and login have no tests of ours.** They are Fortify's code
+**Registration and login are not re-tested as flows.** They are Fortify's code
 reached through the starter kit's own screens, and the kit ships tests for
-them — `tests/Feature/Auth/`. Writing our own would test the framework rather
-than this application. The kit's tests are kept and run in the suite; the only
-substantive change made to them was repointing the post-authentication redirect from the
-removed `dashboard` route to `feed`. This is a judgment, and it is written here
+them — `tests/Feature/Auth/`. Writing our own versions of those would test the
+framework rather than this application, so none were written.
+
+The kit's tests are kept and run in the suite, with three changes that are
+ours, each of them pinning a decision this project made rather than a feature
+the framework provides: the post-authentication redirect was repointed from the
+removed `dashboard` route to `feed`; the login screen's test gained an Inertia
+contract assertion naming the component and the `canResetPassword` prop the
+page reads; and `tests/Feature/Auth/PasskeyFeatureFlagTest.php`, with a
+reworked `tests/Feature/Settings/SecurityTest.php`, holds passkeys switched off
+(see [Out of scope](#out-of-scope)). This is a judgment, and it is written here
 rather than left as a silent gap.
 
 What is tested is where the risk actually is: the visibility rule, which is one
