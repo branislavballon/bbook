@@ -35,6 +35,14 @@ _Avoid_: invite, invitation
 **Friend**:
 The other person in an `accepted` Friendship. Friendship is mutual — direction stops carrying meaning once accepted.
 
+**Stranger**:
+Anyone a person is not a Friend of and is not themselves — including someone with a Friendship still `pending` either way. The people whose Posts are not Visible.
+_Avoid_: non-friend, other user
+
+**Relationship State**:
+Where one person stands with another, as one of four values — none, request sent, request received, friends — computed server-side and read by every list row and every Profile. Alongside it rides *is self*, the one thing it cannot express, because nobody is in a Friendship with themselves.
+_Avoid_: friendship status (that is the Friendship's own `pending`/`accepted`)
+
 ### Posts
 
 **Post**:
@@ -42,7 +50,7 @@ A piece of plain text written by an Author at a point in time. The unit everythi
 _Avoid_: status, update, entry
 
 **Comment**:
-A piece of plain text an Author attaches to a Post. Never edited or deleted in this MVP, and never a reply to another Comment.
+A piece of plain text an Author attaches to a Post. Append-only in this MVP — never edited, never deleted by hand, and never a reply to another Comment. It goes when its Post or its Author does, by database cascade ([ADR-0002](docs/adr/0002-hard-deletes-with-database-cascades.md)).
 
 **Like**:
 One person's single mark of approval on a Post. A person either has Liked a Post or has not — there is no second Like and no other reaction.
@@ -55,5 +63,5 @@ A Post is visible to its Author and to the Author's Friends, and to nobody else.
 _Avoid_: public, shared
 
 **Feed**:
-The Posts visible to a person, newest first — i.e. their own Posts and their Friends' Posts. A view of the Posts, not a thing that is stored.
+The Posts visible to a person, newest first, a page at a time ([ADR-0005](docs/adr/0005-two-lists-page-and-pages-arrive-as-an-envelope.md)) — i.e. their own Posts and their Friends' Posts. A view of the Posts, not a thing that is stored.
 _Avoid_: timeline, wall, stream

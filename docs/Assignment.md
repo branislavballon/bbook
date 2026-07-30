@@ -7,6 +7,20 @@ For interview purposes
 **Document your decisions, development plan, and commit history, and share it with us in your own git repository.**
 
 **Estimated time: approx. 2.5 hours.**
+
+---
+
+# About this document
+
+This is the **input document** for the project — the starting point everything else was built on. It was not handed over in this form; it came out of a brainstorming session with an AI assistant, in which the original assignment was expanded into a concrete scope, a technology stack, and a set of up-front decisions (visibility, counts, avatars, authorization, validation).
+
+The document therefore mixes two kinds of content:
+
+- the **assignment** as received (goal, estimated time, the requirement to document decisions and commit history),
+- the **decisions made during brainstorming**, marked with `>` blockquotes (`Decision:`, `Model:`, `Reordered:`) so it is clear which parts were chosen rather than given.
+
+It is the source of truth for scope: anything listed under "Not to implement for now" stays out of the MVP. Decisions taken later during implementation are not edited into this file — they are recorded as mini-ADRs in `docs/adr/`, and this document only links to them where they change something written here.
+
 ## Goal
 
 Build a simple social network inspired by Facebook, with an emphasis on clean architecture, reusable components, and a solid development process. The application will be implemented using AI agentic coding and the whole process will be documented as required.
