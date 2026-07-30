@@ -1,6 +1,6 @@
 # 15 — Passkeys behind a feature flag
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 **Blocked by:** nothing.
 
@@ -70,15 +70,59 @@ why it is empty is meant to find their way here.
 
 ## Acceptance criteria
 
-- [ ] `FORTIFY_PASSKEYS_ENABLED` exists, defaults to `false`, and appears in `.env.example`.
-- [ ] `Features::passkeys()` is registered only when the flag is true.
-- [ ] The four passkey components are deleted, and no file imports them.
-- [ ] The login page and the password confirmation page offer no passkey path.
-- [ ] The security settings page manages passwords only, and `SecurityController` sends neither `canManagePasskeys` nor `passkeys`.
-- [ ] The `.well-known/passkey-endpoints` route is gone.
-- [ ] The `passkeys` migration, the `PasskeyUser` interface and `PasskeyAuthenticatable` trait on `User`, and the `passkeys` rate limiter are all still present.
-- [ ] `SecurityTest` keeps both affected tests, stripped of their passkey assertions and `Features::passkeys()` setup; the second is renamed, because "without two factor" no longer describes anything.
-- [ ] `php artisan test --compact --filter=Security` is green, as is the wider auth suite.
-- [ ] `vendor/bin/pint --dirty --format agent` reports clean.
-- [ ] The frontend guardrails pass on a tree with the flag off and a cleared `resources/js/actions`: `npm run types:check` and `npm run lint:check`.
-- [ ] Verified in a browser: signing in with a password, confirming a password on the way to security settings, and the security page itself — with the console clean of React and Inertia errors and every request answering as expected.
+- [x] `FORTIFY_PASSKEYS_ENABLED` exists, defaults to `false`, and appears in `.env.example`.
+- [x] `Features::passkeys()` is registered only when the flag is true.
+- [x] The four passkey components are deleted, and no file imports them.
+- [x] The login page and the password confirmation page offer no passkey path.
+- [x] The security settings page manages passwords only, and `SecurityController` sends neither `canManagePasskeys` nor `passkeys`.
+- [x] The `.well-known/passkey-endpoints` route is gone.
+- [x] The `passkeys` migration, the `PasskeyUser` interface and `PasskeyAuthenticatable` trait on `User`, and the `passkeys` rate limiter are all still present.
+- [x] `SecurityTest` keeps both affected tests, stripped of their passkey assertions and `Features::passkeys()` setup; the second is renamed, because "without two factor" no longer describes anything.
+- [x] `php artisan test --compact --filter=Security` is green, as is the wider auth suite.
+- [x] `vendor/bin/pint --dirty --format agent` reports clean.
+- [x] The frontend guardrails pass on a tree with the flag off and a cleared `resources/js/actions`: `npm run types:check` and `npm run lint:check`.
+- [x] Verified in a browser: signing in with a password, confirming a password on the way to security settings, and the security page itself — with the console clean of React and Inertia errors and every request answering as expected.
+
+## Notes on delivery
+
+Two things beyond the letter of the ticket, both consequences of it.
+
+The `Passkey` type in `resources/js/types/auth.ts` went too. It described the
+shape of the `passkeys` prop, only the deleted components read it, and it was
+already fenced off as a starter-kit block (`@chisel-passkeys`). Leaving it
+would have been the same oversight the ticket names for the props themselves.
+
+Three tests are new, because the two `SecurityTest` cases the ticket names are
+**skipped** in this configuration — both open with
+`skipUnlessFortifyHas(Features::twoFactorAuthentication())` and two-factor is
+not a registered feature — so their rewritten `missing('passkeys')` assertions
+never execute. Those skips predate this ticket and are untouched, but a
+criterion cannot rest on an assertion that does not run:
+
+- `SecurityTest` → "security page sends no passkey props", unguarded, carries
+  the prop-removal assertions in the default configuration.
+- `PasskeyFeatureFlagTest` names Fortify's seven passkey routes individually
+  rather than pattern-matching `passkey` in the URI, so a rename upstream
+  fails loudly instead of passing vacuously. It also pins the removal of
+  `.well-known/passkey-endpoints`.
+- `AuthenticationTest` → "login screen can be rendered" gained the Inertia
+  component and prop assertions the Definition of Done requires of a page this
+  change edited; it previously asserted only a 200.
+
+The `.env.example` line does not carry over to the local `.env`, which sets no
+passkey variables; the config default is what makes a fresh clone
+passwords-only.
+
+## Two changes made on the user's say-so
+
+**`@laravel/passkeys` is gone from `package.json`.** With the four components
+deleted nothing imported it. Removing a dependency needs approval and it was
+given, so it went, lockfile and all. It is the one thing that would have to
+come back before the flag is worth flipping — which sharpens rather than
+contradicts the section above: the flag restores endpoints and a table, and
+now not even the client library that would talk to them.
+
+**`resources/js/components/post-form.tsx` was reformatted.** It failed
+`npm run format:check` — a stray blank line inherited from ticket 14 — and so
+would have failed `composer ci:check`. Outside this ticket's scope, fixed here
+on request. One line, no behaviour.

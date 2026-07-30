@@ -137,7 +137,9 @@ return [
     | Passkeys
     |--------------------------------------------------------------------------
     |
-    | These settings configure Fortify's passkey (WebAuthn) support.
+    | These settings configure Fortify's passkey (WebAuthn) support. They are
+    | inert unless FORTIFY_PASSKEYS_ENABLED registers the feature below, and
+    | are kept so that turning the flag on needs no further configuration.
     |
     */
 
@@ -157,14 +159,18 @@ return [
     | by removing them from this array. You're free to only remove some of
     | these features, or you can even remove all of these if you need to.
     |
+    | Passkeys are registered only when FORTIFY_PASSKEYS_ENABLED is true. The
+    | application ships no passkey interface, so the default is off and the
+    | passkeys table, model trait and rate limiter sit dormant behind it.
+    |
     */
 
     'features' => [
         Features::registration(),
         Features::resetPasswords(),
-        Features::passkeys([
+        ...(env('FORTIFY_PASSKEYS_ENABLED', false) ? [Features::passkeys([
             'confirmPassword' => true,
-        ]),
+        ])] : []),
     ],
 
 ];

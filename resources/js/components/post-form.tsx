@@ -26,7 +26,6 @@ type Props = Omit<ComponentProps<typeof Form<PostFormData>>, 'children'> & {
     submitIcon?: LucideIcon;
 };
 
-
 export function PostForm({
     maxLength,
     defaultValue = '',
