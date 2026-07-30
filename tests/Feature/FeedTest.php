@@ -21,6 +21,13 @@ test('authenticated users can visit the feed', function () {
     $response->assertInertia(fn (AssertableInertia $page) => $page->component('feed'));
 });
 
+test('every page is given the application name the wordmark is derived from', function () {
+    $this->actingAs(User::factory()->create());
+
+    $this->get(route('feed'))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('name', config('app.name')));
+});
+
 test('the feed of someone with nothing written and nobody to read is empty rather than broken', function () {
     $newcomer = User::factory()->create();
     Post::factory(3)->create();

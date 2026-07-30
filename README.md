@@ -1,4 +1,4 @@
-# bbook
+# Bbook
 
 A mini social network — write Posts, Like and Comment on them, and connect to
 people as Friends — built as an interview assignment with AI agentic coding.
@@ -210,7 +210,8 @@ omission:
   `composer ci:check` on `workflow_dispatch`; the `push` and `pull_request`
   triggers are commented out to keep an interview repository from burning
   Actions minutes on every push. Re-enabling it is uncommenting them.
-- **Starter-kit leftovers.** The sidebar footer still links to the Laravel React
-  starter kit's repository and documentation, and `tests/Feature/ExampleTest.php`
-  and `tests/Unit/ExampleTest.php` are the skeleton's. Neither affects the
-  application; both are noted rather than quietly left.
+- **Starter-kit leftovers.** `tests/Unit/ExampleTest.php` is the skeleton's, and
+  the unused starter-kit layout variants (`app-header-layout`,
+  `auth-card-layout`, `auth-split-layout`) are reachable from nothing — they are
+  kept as options rather than deleted. Neither affects the application; both are
+  noted rather than quietly left.
