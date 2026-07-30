@@ -15,7 +15,6 @@ const AVATAR_COLOURS = [
     'bg-pink-100 text-pink-900 dark:bg-pink-900 dark:text-pink-100',
 ] as const;
 
-
 export function avatarColourClasses(name: string): string {
     let total = 0;
 

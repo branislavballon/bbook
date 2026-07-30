@@ -1,11 +1,10 @@
 name: tests
 
-# Disabled for now: manual-only. To re-enable automatic runs, restore:
-#   push:
-#     branches:
-#       - main
-#   pull_request:
 on:
+  push:
+    branches:
+      - main
+  pull_request:
   workflow_dispatch:
 
 permissions:

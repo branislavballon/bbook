@@ -8,7 +8,6 @@ type Props = {
     className?: string;
 };
 
-
 export function UserAvatar({ name, className }: Props) {
     const getInitials = useInitials();
 
