@@ -5,6 +5,11 @@ import { DeletePostDialog } from '@/components/delete-post-dialog';
 import { LikeButton } from '@/components/like-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { UserAvatar } from '@/components/user-avatar';
 import { edit, show } from '@/routes/posts';
 import { show as profile } from '@/routes/users';
@@ -119,21 +124,39 @@ export function PostCard({ post, linked = true, reloadProp = 'posts' }: Props) {
 
                         {(post.can.update || post.can.delete) && (
                             <div className="ml-auto flex items-center gap-1">
+                                {/*
+                                 * Icon-only, so the actions stay out of the
+                                 * way of the post itself. The tooltip names
+                                 * them for a pointer; the hidden label names
+                                 * them for everyone else, because a tooltip
+                                 * is neither reliably announced nor reachable
+                                 * by touch.
+                                 */}
                                 {post.can.update && (
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        asChild
-                                        data-test="edit-post-link"
-                                    >
-                                        <Link href={edit(post.id)}>
-                                            <Pencil
-                                                className="size-4"
-                                                aria-hidden="true"
-                                            />
-                                            Edit
-                                        </Link>
-                                    </Button>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="size-8"
+                                                asChild
+                                                data-test="edit-post-link"
+                                            >
+                                                <Link href={edit(post.id)}>
+                                                    <Pencil
+                                                        className="size-4"
+                                                        aria-hidden="true"
+                                                    />
+                                                    <span className="sr-only">
+                                                        Edit post
+                                                    </span>
+                                                </Link>
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            Edit post
+                                        </TooltipContent>
+                                    </Tooltip>
                                 )}
 
                                 {post.can.delete && (

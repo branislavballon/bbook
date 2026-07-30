@@ -11,6 +11,11 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 type Props = {
     postId: number;
@@ -23,16 +28,26 @@ type Props = {
 export function DeletePostDialog({ postId }: Props) {
     return (
         <Dialog>
-            <DialogTrigger asChild>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    data-test="delete-post-button"
-                >
-                    <Trash2 className="size-4" aria-hidden="true" />
-                    Delete
-                </Button>
-            </DialogTrigger>
+            {/*
+             * Icon-only, matching the Edit action beside it: named by a
+             * tooltip for a pointer, and by a hidden label for everyone else.
+             */}
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <DialogTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-8"
+                            data-test="delete-post-button"
+                        >
+                            <Trash2 className="size-4" aria-hidden="true" />
+                            <span className="sr-only">Delete post</span>
+                        </Button>
+                    </DialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent>Delete post</TooltipContent>
+            </Tooltip>
 
             <DialogContent>
                 <DialogTitle>Delete this post?</DialogTitle>

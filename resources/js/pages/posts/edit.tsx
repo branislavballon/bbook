@@ -1,4 +1,5 @@
 import { Head } from '@inertiajs/react';
+import { Check } from 'lucide-react';
 import PostController from '@/actions/App/Http/Controllers/PostController';
 import Heading from '@/components/heading';
 import { PostForm } from '@/components/post-form';
@@ -11,9 +12,10 @@ type Props = {
         id: number;
         body: string;
     };
+    bodyMaxLength: number;
 };
 
-export default function EditPost({ post }: Props) {
+export default function EditPost({ post, bodyMaxLength }: Props) {
     return (
         <>
             <Head title="Edit post" />
@@ -30,9 +32,11 @@ export default function EditPost({ post }: Props) {
                     <CardContent>
                         <PostForm
                             {...PostController.update.form(post.id)}
+                            maxLength={bodyMaxLength}
                             defaultValue={post.body}
                             label="Edit your post"
                             submitLabel="Save changes"
+                            submitIcon={Check}
                         />
                     </CardContent>
                 </Card>

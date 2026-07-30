@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BodyRequest;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Http\Resources\PostResource;
@@ -29,6 +30,7 @@ class PostController extends Controller
 
         return Inertia::render('feed', [
             'posts' => PostResource::collection($posts),
+            'bodyMaxLength' => BodyRequest::MAX_LENGTH,
         ]);
     }
 
@@ -64,6 +66,7 @@ class PostController extends Controller
         return Inertia::render('posts/show', [
             'post' => PostResource::make($post),
             'comments' => $comments->map($this->commentPayload(...)),
+            'bodyMaxLength' => BodyRequest::MAX_LENGTH,
         ]);
     }
 
@@ -77,6 +80,7 @@ class PostController extends Controller
                 'id' => $post->id,
                 'body' => $post->body,
             ],
+            'bodyMaxLength' => BodyRequest::MAX_LENGTH,
         ]);
     }
 

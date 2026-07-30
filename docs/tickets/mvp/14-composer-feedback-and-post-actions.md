@@ -1,6 +1,6 @@
 # 14 — Composer feedback and post actions
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 **Blocked by:** nothing.
 
@@ -47,19 +47,34 @@ counter returns to its full figure.
 
 ## Acceptance criteria
 
-- [ ] The 1000-character cap is declared once, on `BodyRequest`, and the validation rule reads it from there.
-- [ ] The Feed, the post edit page and the Post detail page each pass the cap to their composer as a prop; a feature test asserts the prop on all three.
-- [ ] The composer states the number of characters remaining, and the figure is correct as text is typed and deleted.
-- [ ] The remaining-characters text is associated with the textarea for assistive technology, alongside the validation error that may also describe it — and does not narrate a number on every keystroke.
-- [ ] The counter reaches zero and stops there; the textarea accepts no further input at the cap.
-- [ ] After a Post is successfully published and the composer clears, the counter reads the full figure again — not the length of the text that was submitted.
-- [ ] The submit button is disabled while the field is empty and while a submission is in flight; whitespace-only text counts as empty.
-- [ ] The rule is the same on the edit page: empty disables, unchanged does not.
-- [ ] Edit and Delete on a post card are icon-only, each with a tooltip.
-- [ ] Each carries a visually hidden label, so its name does not depend on the tooltip appearing.
-- [ ] Keyboard focus reaches both, and the delete confirmation dialog still opens from its icon.
-- [ ] The frontend guardrails pass: `npm run types:check` and `npm run lint:check`.
-- [ ] Verified in a browser on all three composers: typing to the cap, an empty field's disabled submit, publishing and watching the counter reset, and both post actions driven by mouse and by keyboard — with the console clean of React and Inertia errors and the write requests answering as expected.
+- [x] The 1000-character cap is declared once, on `BodyRequest`, and the validation rule reads it from there.
+- [x] The Feed, the post edit page and the Post detail page each pass the cap to their composer as a prop; a feature test asserts the prop on all three.
+- [x] The composer states the number of characters remaining, and the figure is correct as text is typed and deleted.
+- [x] The remaining-characters text is associated with the textarea for assistive technology, alongside the validation error that may also describe it — and does not narrate a number on every keystroke.
+- [x] The counter reaches zero and stops there; the textarea accepts no further input at the cap.
+- [x] After a Post is successfully published and the composer clears, the counter reads the full figure again — not the length of the text that was submitted.
+- [x] The submit button is disabled while the field is empty and while a submission is in flight; whitespace-only text counts as empty.
+- [x] The rule is the same on the edit page: empty disables, unchanged does not.
+- [x] Edit and Delete on a post card are icon-only, each with a tooltip.
+- [x] Each carries a visually hidden label, so its name does not depend on the tooltip appearing.
+- [x] Keyboard focus reaches both, and the delete confirmation dialog still opens from its icon.
+- [x] The frontend guardrails pass: `npm run types:check` and `npm run lint:check`.
+- [x] Verified in a browser on all three composers: typing to the cap, an empty field's disabled submit, publishing and watching the counter reset, and both post actions driven by mouse and by keyboard — with the console clean of React and Inertia errors and the write requests answering as expected.
+
+## Notes on delivery
+
+**The submit button gained a glyph too**, asked for after the criteria above
+were met and delivered with them. `PostForm` takes an optional `submitIcon`,
+following the `icon: Icon` prop convention `EmptyState` already uses, so each
+composer's verb has a face of its own rather than three buttons sharing one
+picture: the Feed sends (`Send`), the edit page confirms (`Check`), and the
+Comment box borrows the `MessageCircle` the post card already spends on its
+comment count. The glyphs are `aria-hidden`, so each button is still named by
+its label alone — "Post", "Save changes", "Comment" — and nothing about the
+counter, the cap or the disabled rule moves.
+
+Verified in the same browser pass as the rest: all three buttons render their
+icon, the accessible names are unchanged, and the console stays clean.
 
 ## Consequence to record
 
@@ -67,6 +82,10 @@ Hard-capping the textarea puts the `max` half of the body rule beyond reach of
 the interface: it can no longer be violated from a browser. The rule stays,
 as the defence for anything that does not come from this frontend, and its
 test stays with it — but nobody will see its message again.
+
+Recorded here rather than as an ADR: it is a consequence of one interface
+decision, not a decision of its own. It is not repeated in the code — the
+`max` rule on `BodyRequest` carries no note explaining why nobody reaches it.
 
 ## Deliberately not in this ticket
 

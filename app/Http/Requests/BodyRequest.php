@@ -17,6 +17,8 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 abstract class BodyRequest extends FormRequest
 {
+    public const int MAX_LENGTH = 1000;
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -25,7 +27,7 @@ abstract class BodyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'body' => ['required', 'string', 'max:1000'],
+            'body' => ['required', 'string', 'max:'.self::MAX_LENGTH],
         ];
     }
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Requests\BodyRequest;
 use App\Models\Friendship;
 use App\Models\Post;
 use App\Models\User;
@@ -65,6 +66,33 @@ test('a post longer than 1000 characters is rejected', function () {
 
     $response->assertSessionHasErrors('body');
     expect(Post::count())->toBe(0);
+});
+
+test('the cap the validator enforces is the one the composer is told about', function () {
+    $user = User::factory()->create();
+    $post = Post::factory()->for($user, 'author')->create();
+    $this->actingAs($user);
+
+    // One composer, rendered on three screens — the feed, the edit page and
+    // the comment box — so each of the three has to be told the figure. The
+    // rejection test above is what pins the figure itself.
+    $this->get(route('feed'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('feed')
+            ->where('bodyMaxLength', BodyRequest::MAX_LENGTH)
+        );
+
+    $this->get(route('posts.edit', $post))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('posts/edit')
+            ->where('bodyMaxLength', BodyRequest::MAX_LENGTH)
+        );
+
+    $this->get(route('posts.show', $post))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('posts/show')
+            ->where('bodyMaxLength', BodyRequest::MAX_LENGTH)
+        );
 });
 
 test('the post body is trimmed before it is stored', function () {

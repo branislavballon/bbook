@@ -13,9 +13,10 @@ import type { Comment, Post } from '@/types/posts';
 type Props = {
     post: Post;
     comments: Comment[];
+    bodyMaxLength: number;
 };
 
-export default function ShowPost({ post, comments }: Props) {
+export default function ShowPost({ post, comments, bodyMaxLength }: Props) {
     return (
         <>
             <Head title={`Post by ${post.author.name}`} />
@@ -65,6 +66,7 @@ export default function ShowPost({ post, comments }: Props) {
                         <CardContent>
                             <PostForm
                                 {...CommentController.store.form(post.id)}
+                                maxLength={bodyMaxLength}
                                 options={{
                                     preserveScroll: true,
                                     only: ['post', 'comments'],
@@ -72,6 +74,7 @@ export default function ShowPost({ post, comments }: Props) {
                                 label="Write a comment"
                                 placeholder="Write a comment…"
                                 submitLabel="Comment"
+                                submitIcon={MessageCircle}
                             />
                         </CardContent>
                     </Card>

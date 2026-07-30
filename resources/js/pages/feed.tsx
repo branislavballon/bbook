@@ -14,9 +14,10 @@ import type { Post } from '@/types/posts';
 
 type Props = {
     posts: Paginated<Post>;
+    bodyMaxLength: number;
 };
 
-export default function Feed({ posts }: Props) {
+export default function Feed({ posts, bodyMaxLength }: Props) {
     return (
         <>
             <Head title="Feed" />
@@ -26,7 +27,10 @@ export default function Feed({ posts }: Props) {
 
                 <Card>
                     <CardContent>
-                        <PostForm {...PostController.store.form()} />
+                        <PostForm
+                            {...PostController.store.form()}
+                            maxLength={bodyMaxLength}
+                        />
                     </CardContent>
                 </Card>
 
