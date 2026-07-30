@@ -14,6 +14,10 @@ _Avoid_: owner, creator, poster
 The public page of one person: their identity, their Posts if they are Visible to the viewer, and the action available on the Friendship between viewer and subject. Distinct from *settings*, which is where a person edits their own account.
 _Avoid_: wall, account page
 
+**Avatar**:
+The mark that stands for a person wherever they appear: their initials over a colour taken from their name. Never a picture — nothing in this network is uploaded. Two people who share initials do not share a colour, because the colour is there to tell them apart.
+_Avoid_: profile picture, photo, gravatar
+
 ### Friendship
 
 **Friendship**:

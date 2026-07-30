@@ -79,7 +79,7 @@ Around those: Likes, Comments on the Post detail page, a public Profile per pers
 ### Profiles
 
 42. As an authenticated person, I want a Profile page for anyone on the network, so that I can see who they are before connecting.
-43. As an authenticated person, I want to see a person's name and initials avatar on their Profile, so that I can identify them.
+43. As an authenticated person, I want to see a person's name and initials avatar on their Profile, so that I can identify them. The avatar takes its colour from the person's whole name rather than from the initials it displays, so that two people who share initials are still told apart at a glance.
 44. As an authenticated person, I want to see a stranger's Posts withheld with an explanation that they are visible to Friends, so that I understand why the page is sparse rather than assuming they never write.
 45. As an authenticated person, I want to see a Friend's Posts on their Profile, so that Friendship has a visible payoff.
 46. As an authenticated person, I want the relationship action on a Profile to match our actual state — send a request, a disabled pending marker, accept and reject controls, or nothing because we are already Friends — so that the page is always actionable and never misleading.
@@ -188,7 +188,9 @@ Shapes read by more than one screen are Eloquent API Resources, per [ADR-0004](.
 
 The Profile receives a single `relationship_state` value computed server-side; the component switches on it. No client-side reasoning about the graph. It is the same value every friends list row carries, so `RelationshipAction` is one component shared by both — the four states are switched on in one place. Alongside it rides `is_self`, the one thing the state cannot express, because nobody is in a friendship with themselves.
 
-Components are built as reusable pieces from the start, not refactored into shape at the end: `PostCard`, `PostForm` (shared by create and edit), `CommentItem`, `LikeButton`, `UserAvatar`, `EmptyState`, `Paginator`. shadcn/ui primitives underneath. Sidebar shell variant, three navigation items — Feed, Friends, My Profile — with the kit's existing user menu untouched for settings and logout.
+Components are built as reusable pieces from the start, not refactored into shape at the end: `PostCard`, `PostForm` (shared by create and edit), `CommentItem`, `LikeButton`, `UserAvatar`, `EmptyState`, `Paginator`. shadcn/ui primitives underneath. Sidebar shell variant, three navigation items — Feed, Friends, My Profile — with the kit's existing user menu untouched for settings and logout. Every avatar in the interface is the same `UserAvatar`, the header's included, so a person is one colour everywhere they appear.
+
+Liking is the one gesture that answers the press rather than the server: the heart pops on the act of Liking — not of unliking, and not at all where motion is unwelcome — while the count goes on waiting for the response, because the count is computed server-side and mirroring it client-side would reintroduce the synchronisation risk that computing it was meant to remove.
 
 The interface presents the application and not the tooling behind it. It is called **Bbook**, named from `config('app.name')` so the string lives in one place; its mark is a book with spectacles, drawn as a single monochrome path so it takes its colour from wherever it is placed; and the logo is that mark beside the name with its first character accented, derived from the name rather than written out. Mark and wordmark are shared components, used by the sidebar and by the auth screens — which, with no page above them, are where a visitor meets the application. Framework references in the interface, including the kit's Repository and Documentation links, are removed; references in `README.md`, `docs/` and the ADRs stay, because the assignment asks for the stack and the decisions to be documented.
 
